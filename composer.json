@@ -1,0 +1,30 @@
+{
+    "name": "sroze/enqueue-bridge",
+    "type": "symfony-bridge",
+    "description": "Enqueue bridge for Symfony Message component",
+    "keywords": ["symfony", "message", "enqueue"],
+    "homepage": "http://symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Samuel Roze",
+            "email": "samuel.roze@gmail.com"
+        },
+        {
+            "name": "Symfony Community",
+            "homepage": "http://symfony.com/contributors"
+        }
+    ],
+    "require": {
+        "enqueue/enqueue-bundle": "^0.7.17"
+    },
+    "autoload": {
+        "psr-4": { "Sam\\Symfony\\Bridge\\EnqueueMessage\\": "" }
+    },
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
+}
