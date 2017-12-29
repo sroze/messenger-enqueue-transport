@@ -1,6 +1,6 @@
 {
     "name": "sroze/enqueue-bridge",
-    "type": "symfony-bridge",
+    "type": "symfony-bundle",
     "description": "Enqueue bridge for Symfony Message component",
     "keywords": ["symfony", "message", "enqueue"],
     "homepage": "http://symfony.com",
