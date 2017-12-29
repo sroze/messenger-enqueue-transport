@@ -10,48 +10,44 @@ This bridge will allow you to use [Php-Enqueue](https://github.com/php-enqueue/e
 composer req sroze/enqueue-bridge:dev-master enqueue/amqp-ext
 ```
 
-2. Configure the adapter.
+2. Enqueue's recipes should have created configuration files and added a `ENQUEUE_DSN` to your `.env` and `.env.dist` files. 
+   Change the DSN to match your queue broker, for example:
 ```yaml
-# config/packages/enqueue.yaml
-enqueue:
-    transport:
-        default: 'amqp'
-        amqp:
-            host: 'localhost'
-            port: 5672
-            user: 'guest'
-            pass: 'guest'
-            vhost: '/'
-            receive_method: basic_consume
-    client: ~
+# .env
+# ...
+
+###> enqueue/enqueue-bundle ###
+ENQUEUE_DSN=amqp://guest:guest@localhost:5672/%2f
+###< enqueue/enqueue-bundle ###
 ```
 
 3. Register your consumer & producer
 ```yaml
 # config/services.yaml
 services:
-    app.amqp_consumer:
-        class: Sam\Symfony\Bridge\EnqueueMessage\EnqueueConsumer
+    app.message_receiver:
+        class: Sam\Symfony\Bridge\EnqueueMessage\EnqueueReceiver
         arguments:
         - "@message.transport.default_decoder"
-        - "@enqueue.transport.amqp.context"
+        - "@enqueue.transport.default.context"
         - "messages" # Name of the queue
+        public: true
 
-    app.amqp_producer:
-        class: Sam\Symfony\Bridge\EnqueueMessage\EnqueueProducer
+    app.message_sender:
+        class: Sam\Symfony\Bridge\EnqueueMessage\EnqueueSender
         arguments: 
         - "@message.transport.default_encoder"
-        - "@enqueue.transport.amqp.context"
+        - "@enqueue.transport.default.context"
         - "messages" # Name of the queue
 ```
 
-4. Route your messages to the consumer
+4. Route your messages to the sender
 ```yaml
 # config/packages/framework.yaml
 framework:
     message:
         routing:
-            'App\Message\MyMessage': app.amqp_producer
+            'App\Message\MyMessage': app.message_sender
 ```
 
 You are done. The `MyMessage` messages will be sent to your local RabbitMq instance. In order to process
@@ -59,6 +55,14 @@ them asynchronously, you need to consume the messages pushed in the queue. You c
 command:
 
 ```bash
-bin/console message:consume --consumer=app.amqp_consumer
+bin/console message:consume app.message_receiver
 ```
 
+## Misc
+
+### Local RabbitMq with Docker
+
+If you don't have a RabbitMq instance working, you can use Docker to very easily have one running:
+```
+docker run -d --hostname rabbit --name rabbit -p 8080:15672 -p 5672:5672 rabbitmq:3-management
+```

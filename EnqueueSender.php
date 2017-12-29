@@ -16,18 +16,18 @@ use Interop\Amqp\AmqpQueue;
 use Interop\Amqp\AmqpTopic;
 use Interop\Amqp\Impl\AmqpBind;
 use Interop\Amqp\Impl\AmqpMessage;
-use Symfony\Component\Message\MessageProducerInterface;
-use Symfony\Component\Message\Transport\MessageEncoderInterface;
+use Symfony\Component\Message\Transport\SenderInterface;
+use Symfony\Component\Message\Transport\Serialization\EncoderInterface;
 
 /**
- * Bridge between Php-Enqueue producers and Symfony Message component.
+ * Symfony Message sender to bridge Php-Enqueue producers.
  *
  * @author Samuel Roze <samuel.roze@gmail.com>
  */
-class EnqueueProducer implements MessageProducerInterface
+class EnqueueSender implements SenderInterface
 {
     /**
-     * @var MessageEncoderInterface
+     * @var EncoderInterface
      */
     private $messageEncoder;
 
@@ -46,7 +46,7 @@ class EnqueueProducer implements MessageProducerInterface
      */
     private $topicName;
 
-    public function __construct(MessageEncoderInterface $messageEncoder, AmqpContext $amqpContext, string $queueName = null, string $topicName = null)
+    public function __construct(EncoderInterface $messageEncoder, AmqpContext $amqpContext, string $queueName = null, string $topicName = null)
     {
         $this->messageEncoder = $messageEncoder;
         $this->amqpContext = $amqpContext;
@@ -58,7 +58,7 @@ class EnqueueProducer implements MessageProducerInterface
     /**
      * {@inheritdoc}
      */
-    public function produce($message)
+    public function send($message)
     {
         $encodedMessage = $this->messageEncoder->encode($message);
 

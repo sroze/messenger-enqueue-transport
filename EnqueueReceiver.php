@@ -12,18 +12,18 @@
 namespace Sam\Symfony\Bridge\EnqueueMessage;
 
 use Enqueue\AmqpExt\AmqpContext;
-use Symfony\Component\Message\MessageConsumerInterface;
-use Symfony\Component\Message\Transport\MessageDecoderInterface;
+use Symfony\Component\Message\Transport\ReceiverInterface;
+use Symfony\Component\Message\Transport\Serialization\DecoderInterface;
 
 /**
- * Bridge between Php-Enqueue consumers and Symfony Message consumers.
+ * Symfony Message receivers to get messages from php-enqueue consumers.
  *
  * @author Samuel Roze <samuel.roze@gmail.com>
  */
-class EnqueueConsumer implements MessageConsumerInterface
+class EnqueueReceiver implements ReceiverInterface
 {
     /**
-     * @var MessageDecoderInterface
+     * @var DecoderInterface
      */
     private $messageDecoder;
 
@@ -37,7 +37,7 @@ class EnqueueConsumer implements MessageConsumerInterface
      */
     private $queueName;
 
-    public function __construct(MessageDecoderInterface $messageDecoder, AmqpContext $amqpContext, string $queueName)
+    public function __construct(DecoderInterface $messageDecoder, AmqpContext $amqpContext, string $queueName)
     {
         $this->messageDecoder = $messageDecoder;
         $this->amqpContext = $amqpContext;
@@ -47,7 +47,7 @@ class EnqueueConsumer implements MessageConsumerInterface
     /**
      * {@inheritdoc}
      */
-    public function consume(): \Generator
+    public function receive(): iterable
     {
         $destination = $this->amqpContext->createQueue($this->queueName);
         $consumer = $this->amqpContext->createConsumer($destination);
