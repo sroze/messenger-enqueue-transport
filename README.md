@@ -19,35 +19,19 @@ composer req sroze/enqueue-bridge:dev-master enqueue/amqp-ext
 ###> enqueue/enqueue-bundle ###
 ENQUEUE_DSN=amqp://guest:guest@localhost:5672/%2f
 ###< enqueue/enqueue-bundle ###
+
+###> sroze/enqueue-bridge ###
+ENQUEUE_BRIDGE_QUEUE_NAME=messages
+###< sroze/enqueue-bridge ###
 ```
 
-3. Register your consumer & producer
-```yaml
-# config/services.yaml
-services:
-    app.message_receiver:
-        class: Sam\Symfony\Bridge\EnqueueMessage\EnqueueReceiver
-        arguments:
-        - "@message.transport.default_decoder"
-        - "@enqueue.transport.default.context"
-        - "messages" # Name of the queue
-        public: true
-
-    app.message_sender:
-        class: Sam\Symfony\Bridge\EnqueueMessage\EnqueueSender
-        arguments: 
-        - "@message.transport.default_encoder"
-        - "@enqueue.transport.default.context"
-        - "messages" # Name of the queue
-```
-
-4. Route your messages to the sender
+3. Route your messages to the sender
 ```yaml
 # config/packages/framework.yaml
 framework:
     message:
         routing:
-            'App\Message\MyMessage': app.message_sender
+            'App\Message\MyMessage': enqueue_bridge.sender
 ```
 
 You are done. The `MyMessage` messages will be sent to your local RabbitMq instance. In order to process
@@ -55,7 +39,7 @@ them asynchronously, you need to consume the messages pushed in the queue. You c
 command:
 
 ```bash
-bin/console message:consume app.message_receiver
+bin/console message:consume enqueue_bridge.receiver
 ```
 
 ## Misc
