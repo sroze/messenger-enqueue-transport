@@ -36,6 +36,7 @@ class EnqueueBridgeExtension extends Extension
             $config['queue'],
         ]);
         $receiverDefinition->setPublic(true);
+        $receiverDefinition->addTag('message_receiver');
 
         $senderDefinition = new Definition(EnqueueSender::class, [
             new Reference('message.transport.default_encoder'),
@@ -44,6 +45,7 @@ class EnqueueBridgeExtension extends Extension
             $config['topic'] ?: $config['queue']
         ]);
         $senderDefinition->setPublic(true);
+        $senderDefinition->addTag('message_sender');
 
         $container->setDefinitions([
             'enqueue_bridge.receiver' => $receiverDefinition,
