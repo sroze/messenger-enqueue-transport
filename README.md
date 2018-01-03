@@ -4,6 +4,11 @@ This bridge will allow you to use [Php-Enqueue](https://github.com/php-enqueue/e
 
 ## Usage
 
+0. **While in development**, use the [recipe's PR](https://github.com/symfony/recipes-contrib/pull/220):
+```
+export SYMFONY_ENDPOINT=https://symfony.sh/r/github.com/symfony/recipes-contrib/220
+```
+
 1. Install the enqueue bridge and the enqueue AMQP extension. (Note that you can use any of the multiple php-enqueue extensions)
 
 ```
