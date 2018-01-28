@@ -23,6 +23,7 @@ use Symfony\Component\Message\Transport\Serialization\EncoderInterface;
 /**
  * Symfony Message sender to bridge Php-Enqueue producers.
  *
+ * @author Samuel Roze <samuel.roze@gmail.com>
  * @author Max Kotliar <kotlyar.maksim@gmail.com>
  */
 class QueueInteropSender implements SenderInterface
