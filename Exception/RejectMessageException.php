@@ -11,6 +11,8 @@
 
 namespace Sam\Symfony\Bridge\EnqueueMessage;
 
-class RejectMessageException extends \LogicException
+use Symfony\Component\Message\Exception\ExceptionInterface;
+
+class RejectMessageException extends \LogicException implements ExceptionInterface
 {
 }
