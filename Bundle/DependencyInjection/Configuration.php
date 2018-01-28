@@ -29,6 +29,9 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('queue')->isRequired()->end()
                     ->scalarNode('topic')->defaultNull()->end()
+                    ->scalarNode('deliveryDelay')->defaultNull()->end()
+                    ->scalarNode('timeToLive')->defaultNull()->end()
+                    ->scalarNode('priority')->defaultNull()->end()
                 ->end()
             ->end()
         ;
