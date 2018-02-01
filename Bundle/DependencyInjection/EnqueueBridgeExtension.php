@@ -11,6 +11,7 @@
 
 namespace Sam\Symfony\Bridge\EnqueueMessage\Bundle\DependencyInjection;
 
+use Sam\Symfony\Bridge\EnqueueMessage\AmqpContextManager;
 use Sam\Symfony\Bridge\EnqueueMessage\QueueInteropReceiver;
 use Sam\Symfony\Bridge\EnqueueMessage\QueueInteropSender;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -30,24 +31,30 @@ class EnqueueBridgeExtension extends Extension
             return;
         }
 
-        $receiverDefinition = new Definition(QueueInteropReceiver::class, [
+        $receiverDefinition = new Definition(QueueInteropReceiver::class, array(
             new Reference('message.transport.default_decoder'),
-            new Reference('enqueue.transport.default.context'),
+            new Definition(AmqpContextManager::class, array(
+                new Reference('enqueue.transport.default.context'),
+            )),
             $config['topic'] ?: 'messages',
             $config['queue'] ?: 'messages',
-        ]);
+            $container->getParameter('kernel.debug')
+        ));
         $receiverDefinition->setPublic(true);
         $receiverDefinition->addTag('message_receiver');
 
-        $senderDefinition = new Definition(QueueInteropSender::class, [
+        $senderDefinition = new Definition(QueueInteropSender::class, array(
             new Reference('message.transport.default_encoder'),
-            new Reference('enqueue.transport.default.context'),
+            new Definition(AmqpContextManager::class, array(
+                new Reference('enqueue.transport.default.context'),
+            )),
             $config['topic'] ?: 'messages',
             $config['queue'] ?: 'messages',
+            $container->getParameter('kernel.debug'),
             $config['deliveryDelay'],
             $config['timeToLive'],
             $config['priority'],
-        ]);
+        ));
         $senderDefinition->setPublic(true);
         $senderDefinition->addTag('message_sender');
 

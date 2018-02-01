@@ -28,54 +28,30 @@ use Symfony\Component\Message\Transport\Serialization\EncoderInterface;
  */
 class QueueInteropSender implements SenderInterface
 {
-    /**
-     * @var EncoderInterface
-     */
     private $messageEncoder;
-
-    /**
-     * @var PsrContext
-     */
-    private $context;
-
-    /**
-     * @var string
-     */
+    private $contextManager;
     private $topicName;
-
-    /**
-     * @var string
-     */
     private $queueName;
-
-    /**
-     * @var float
-     */
+    private $debug;
     private $deliveryDelay;
-
-    /**
-     * @var float
-     */
     private $timeToLive;
-
-    /**
-     * @var int
-     */
     private $priority;
 
     public function __construct(
         EncoderInterface $messageEncoder,
-        PsrContext $context,
+        ContextManager $contextManager,
         string $topicName,
         string $queueName,
+        bool $debug = false,
         float $deliveryDelay = null,
         float $timeToLive = null,
         int $priority = null
     ) {
         $this->messageEncoder = $messageEncoder;
-        $this->context = $context;
+        $this->contextManager = $contextManager;
         $this->topicName = $topicName;
         $this->queueName = $queueName;
+        $this->debug = $debug;
 
         $this->deliveryDelay = $deliveryDelay;
         $this->timeToLive = $timeToLive;
@@ -87,29 +63,23 @@ class QueueInteropSender implements SenderInterface
      */
     public function send($message)
     {
-        $topic = $this->context->createTopic($this->topicName);
-        if ($this->context instanceof AmqpContext) {
-            $topic = $this->context->createTopic($this->topicName);
-            $topic->setType(AmqpTopic::TYPE_FANOUT);
-            $topic->addFlag(AmqpTopic::FLAG_DURABLE);
-            $this->context->declareTopic($topic);
+        $psrContext = $this->contextManager->psrContext();
+        $topic = $psrContext->createTopic($this->topicName);
+        $destination = ['topic' => $this->topicName, 'queue' => $this->queueName,];
 
-            $queue = $this->context->createQueue($this->queueName);
-            $queue->addFlag(AmqpQueue::FLAG_DURABLE);
-            $this->context->declareQueue($queue);
-
-            $this->context->bind(new AmqpBind($queue, $topic));
+        if ($this->debug) {
+            $this->contextManager->ensureExists($destination);
         }
 
         $encodedMessage = $this->messageEncoder->encode($message);
 
-        $message = $this->context->createMessage(
+        $psrMessage = $psrContext->createMessage(
             $encodedMessage['body'],
             $encodedMessage['properties'] ?? [],
             $encodedMessage['headers'] ?? []
         );
 
-        $producer = $this->context->createProducer();
+        $producer = $psrContext->createProducer();
 
         if (null !== $this->deliveryDelay) {
             $producer->setDeliveryDelay($this->deliveryDelay);
@@ -122,8 +92,13 @@ class QueueInteropSender implements SenderInterface
         }
 
         try {
-            $producer->send($topic, $message);
+            $producer->send($topic, $psrMessage);
         } catch (Exception $e) {
+            if ($this->contextManager->recoverException($e, $destination)) {
+                // The context manager recovered the exception, we re-try.
+                return $this->send($message);
+            }
+
             throw new SendingMessageFailedException($e->getMessage(), null, $e);
         }
     }

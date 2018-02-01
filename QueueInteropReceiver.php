@@ -27,37 +27,20 @@ use Symfony\Component\Message\Transport\Serialization\DecoderInterface;
  */
 class QueueInteropReceiver implements ReceiverInterface
 {
-    /**
-     * @var DecoderInterface
-     */
     private $messageDecoder;
-
-    /**
-     * @var PsrContext
-     */
-    private $context;
-
-    /**
-     * @var string
-     */
+    private $contextManager;
     private $queueName;
-
-    /**
-     * @var string
-     */
     private $topicName;
-
-    /**
-     * @var float
-     */
     private $receiveTimeout;
+    private $debug;
 
-    public function __construct(DecoderInterface $messageDecoder, PsrContext $context, string $queueName, string $topicName)
+    public function __construct(DecoderInterface $messageDecoder, ContextManager $contextManager, string $queueName, string $topicName, $debug = false)
     {
         $this->messageDecoder = $messageDecoder;
-        $this->context = $context;
+        $this->contextManager = $contextManager;
         $this->queueName = $queueName;
         $this->topicName = $topicName;
+        $this->debug = $debug;
 
         $this->receiveTimeout = 1000; // 1s
     }
@@ -67,25 +50,26 @@ class QueueInteropReceiver implements ReceiverInterface
      */
     public function receive(): iterable
     {
-        $queue = $this->context->createQueue($this->queueName);
-        $consumer = $this->context->createConsumer($queue);
+        $psrContext = $this->contextManager->psrContext();
+        $queue = $psrContext->createQueue($this->queueName);
+        $consumer = $psrContext->createConsumer($queue);
+        $destination = ['topic' => $this->topicName, 'queue' => $this->queueName,];
 
-        if ($this->context instanceof AmqpContext) {
-            $topic = $this->context->createTopic($this->topicName);
-            $topic->setType(AmqpTopic::TYPE_FANOUT);
-            $topic->addFlag(AmqpTopic::FLAG_DURABLE);
-            $this->context->declareTopic($topic);
-
-            $queue = $this->context->createQueue($this->queueName);
-            $queue->addFlag(AmqpQueue::FLAG_DURABLE);
-            $this->context->declareQueue($queue);
-
-            $this->context->bind(new AmqpBind($queue, $topic));
+        if ($this->debug) {
+            $this->contextManager->ensureExists($destination);
         }
 
         while (true) {
-            if (null === ($message = $consumer->receive($this->receiveTimeout))) {
-                continue;
+            try {
+                if (null === ($message = $consumer->receive($this->receiveTimeout))) {
+                    continue;
+                }
+            } catch (\Exception $e) {
+                if ($this->contextManager->recoverException($e, $destination)) {
+                    continue;
+                }
+
+                throw $e;
             }
 
             try {
