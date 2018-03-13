@@ -48,7 +48,7 @@ class QueueInteropReceiver implements ReceiverInterface
     /**
      * {@inheritdoc}
      */
-    public function receive(): iterable
+    public function receive(): \Generator 
     {
         $psrContext = $this->contextManager->psrContext();
         $queue = $psrContext->createQueue($this->queueName);
