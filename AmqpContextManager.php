@@ -11,11 +11,11 @@
 
 namespace Sam\Symfony\Bridge\EnqueueMessage;
 
-use Interop\Queue\PsrContext;
 use Interop\Amqp\AmqpContext;
 use Interop\Amqp\AmqpQueue;
 use Interop\Amqp\AmqpTopic;
 use Interop\Amqp\Impl\AmqpBind;
+use Interop\Queue\PsrContext;
 
 class AmqpContextManager implements ContextManager
 {
@@ -29,7 +29,7 @@ class AmqpContextManager implements ContextManager
     /**
      * {@inheritdoc}
      */
-    public function psrContext() : PsrContext
+    public function psrContext(): PsrContext
     {
         return $this->psrContext;
     }
@@ -37,10 +37,10 @@ class AmqpContextManager implements ContextManager
     /**
      * {@inheritdoc}
      */
-    public function recoverException(\Exception $exception, array $destination) : bool
+    public function recoverException(\Exception $exception, array $destination): bool
     {
         if ($exception instanceof \AMQPQueueException) {
-            if ($exception->getCode() == 404) {
+            if (404 === $exception->getCode()) {
                 return $this->ensureExists($destination);
             }
         }
@@ -51,7 +51,7 @@ class AmqpContextManager implements ContextManager
     /**
      * {@inheritdoc}
      */
-    public function ensureExists(array $destination) : bool
+    public function ensureExists(array $destination): bool
     {
         if (!$this->psrContext instanceof AmqpContext) {
             return false;

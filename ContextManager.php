@@ -26,7 +26,7 @@ interface ContextManager
      *
      * @return PsrContext
      */
-    public function psrContext() : PsrContext;
+    public function psrContext(): PsrContext;
 
     /**
      * Recover from the given exception. This can typically be something like the queue or topic do not exists.
@@ -38,7 +38,7 @@ interface ContextManager
      *
      * @return bool
      */
-    public function recoverException(\Exception $exception, array $destination) : bool;
+    public function recoverException(\Exception $exception, array $destination): bool;
 
     /**
      * Ensure that the given destination exists.
@@ -49,5 +49,5 @@ interface ContextManager
      *
      * @return bool
      */
-    public function ensureExists(array $destination) : bool;
+    public function ensureExists(array $destination): bool;
 }

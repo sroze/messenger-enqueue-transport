@@ -11,12 +11,7 @@
 
 namespace Sam\Symfony\Bridge\EnqueueMessage;
 
-use Interop\Amqp\AmqpContext;
-use Interop\Amqp\AmqpQueue;
-use Interop\Amqp\AmqpTopic;
-use Interop\Amqp\Impl\AmqpBind;
 use Interop\Queue\Exception;
-use Interop\Queue\PsrContext;
 use Symfony\Component\Message\Transport\SenderInterface;
 use Symfony\Component\Message\Transport\Serialization\EncoderInterface;
 
@@ -65,7 +60,7 @@ class QueueInteropSender implements SenderInterface
     {
         $psrContext = $this->contextManager->psrContext();
         $topic = $psrContext->createTopic($this->topicName);
-        $destination = ['topic' => $this->topicName, 'queue' => $this->queueName,];
+        $destination = array('topic' => $this->topicName, 'queue' => $this->queueName);
 
         if ($this->debug) {
             $this->contextManager->ensureExists($destination);
@@ -75,8 +70,8 @@ class QueueInteropSender implements SenderInterface
 
         $psrMessage = $psrContext->createMessage(
             $encodedMessage['body'],
-            $encodedMessage['properties'] ?? [],
-            $encodedMessage['headers'] ?? []
+            $encodedMessage['properties'] ?? array(),
+            $encodedMessage['headers'] ?? array()
         );
 
         $producer = $psrContext->createProducer();

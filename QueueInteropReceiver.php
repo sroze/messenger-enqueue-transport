@@ -11,11 +11,6 @@
 
 namespace Sam\Symfony\Bridge\EnqueueMessage;
 
-use Interop\Amqp\AmqpContext;
-use Interop\Amqp\AmqpQueue;
-use Interop\Amqp\AmqpTopic;
-use Interop\Amqp\Impl\AmqpBind;
-use Interop\Queue\PsrContext;
 use Symfony\Component\Message\Transport\ReceiverInterface;
 use Symfony\Component\Message\Transport\Serialization\DecoderInterface;
 
@@ -53,7 +48,7 @@ class QueueInteropReceiver implements ReceiverInterface
         $psrContext = $this->contextManager->psrContext();
         $queue = $psrContext->createQueue($this->queueName);
         $consumer = $psrContext->createConsumer($queue);
-        $destination = ['topic' => $this->topicName, 'queue' => $this->queueName,];
+        $destination = array('topic' => $this->topicName, 'queue' => $this->queueName);
 
         if ($this->debug) {
             $this->contextManager->ensureExists($destination);
@@ -73,11 +68,11 @@ class QueueInteropReceiver implements ReceiverInterface
             }
 
             try {
-                yield $this->messageDecoder->decode([
+                yield $this->messageDecoder->decode(array(
                     'body' => $message->getBody(),
                     'headers' => $message->getHeaders(),
                     'properties' => $message->getProperties(),
-                ]);
+                ));
 
                 $consumer->acknowledge($message);
             } catch (RejectMessageException $e) {

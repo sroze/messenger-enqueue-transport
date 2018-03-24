@@ -15,7 +15,7 @@ export SYMFONY_ENDPOINT=https://symfony.sh/r/github.com/symfony/recipes-contrib/
 composer req sroze/enqueue-bridge:dev-master enqueue/amqp-ext
 ```
 
-2. Enqueue's recipes should have created configuration files and added a `ENQUEUE_DSN` to your `.env` and `.env.dist` files. 
+2. Enqueue's recipes should have created configuration files and added a `ENQUEUE_DSN` to your `.env` and `.env.dist` files.
    Change the DSN to match your queue broker, for example:
 ```yaml
 # .env
