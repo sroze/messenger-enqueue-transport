@@ -1,6 +1,6 @@
-# Enqueue bridge for Symfony Message component
+# Enqueue bridge for Symfony Messenger component
 
-This bridge will allow you to use [Php-Enqueue](https://github.com/php-enqueue/enqueue-dev)'s great list of brokers for your messages that are going through Symfony's Message component.
+This bridge will allow you to use [Php-Enqueue](https://github.com/php-enqueue/enqueue-dev)'s great list of brokers for your messages that are going through Symfony's Messenger component.
 
 ## Usage
 
@@ -34,17 +34,17 @@ ENQUEUE_BRIDGE_QUEUE_NAME=messages
 ```yaml
 # config/packages/framework.yaml
 framework:
-    message:
+    messenger:
         routing:
             'App\Message\MyMessage': enqueue_bridge.sender
 ```
 
 You are done. The `MyMessage` messages will be sent to your local RabbitMq instance. In order to process
-them asynchronously, you need to consume the messages pushed in the queue. You can start a worker with the `message:consume`
+them asynchronously, you need to consume the messages pushed in the queue. You can start a worker with the `messenger:consume-messages`
 command:
 
 ```bash
-bin/console message:consume enqueue_bridge.receiver
+bin/console messenger:consume-messages enqueue_bridge.receiver
 ```
 
 ## Misc
@@ -53,5 +53,5 @@ bin/console message:consume enqueue_bridge.receiver
 
 If you don't have a RabbitMq instance working, you can use Docker to very easily have one running:
 ```
-docker run -d --hostname rabbit --name rabbit -p 8080:15672 -p 5672:5672 rabbitmq:3-management
+docker run -d --hostname rabbit --name rabbit -p 8080:15672 -p 5672:5672 rabbitmq:3.7.4-management-alpine
 ```
