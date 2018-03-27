@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage;
+namespace Sam\Symfony\Bridge\EnqueueMessage\Exception;
 
-use Symfony\Component\Message\Exception\ExceptionInterface;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 
 class RequeueMessageException extends \LogicException implements ExceptionInterface
 {

@@ -1,0 +1,24 @@
+language: php
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+matrix:
+  include:
+    - php: '7.1'
+
+before_install:
+  - phpenv config-rm xdebug.ini || echo "xdebug not available"
+  - composer global require --dev 'friendsofphp/php-cs-fixer:^2.11'
+  - export PATH="$PATH:$HOME/.composer/vendor/bin"
+
+install:
+  - composer update --no-progress --no-suggest --ansi
+
+script:
+  - php-cs-fixer fix --dry-run --diff --no-ansi
+  - vendor/bin/phpunit
+

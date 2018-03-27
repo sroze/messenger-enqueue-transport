@@ -14,6 +14,7 @@ namespace Sam\Symfony\Bridge\EnqueueMessage;
 use Interop\Queue\Exception;
 use Symfony\Component\Messenger\Transport\SenderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
+use Sam\Symfony\Bridge\EnqueueMessage\Exception\SendingMessageFailedException;
 
 /**
  * Symfony Message sender to bridge Php-Enqueue producers.

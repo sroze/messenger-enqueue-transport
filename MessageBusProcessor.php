@@ -16,7 +16,9 @@ use Interop\Queue\PsrMessage;
 use Interop\Queue\PsrProcessor;
 use Symfony\Component\Messenger\Asynchronous\Transport\ReceivedMessage;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Serializer\Encoder\DecoderInterface;
+use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
+use Sam\Symfony\Bridge\EnqueueMessage\Exception\RejectMessageException;
+use Sam\Symfony\Bridge\EnqueueMessage\Exception\RequeueMessageException;
 
 /**
  * The processor could be used with any queue interop compatible consumer, for example Enqueue's QueueConsumer.

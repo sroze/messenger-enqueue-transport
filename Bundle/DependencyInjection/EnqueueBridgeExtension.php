@@ -31,24 +31,24 @@ class EnqueueBridgeExtension extends Extension
             return;
         }
 
+        $contextManager = new Definition(AmqpContextManager::class, array(
+            new Reference('enqueue.transport.default.context'),
+        ));
+
         $receiverDefinition = new Definition(QueueInteropReceiver::class, array(
             new Reference('messenger.transport.default_decoder'),
-            new Definition(AmqpContextManager::class, array(
-                new Reference('enqueue.transport.default.context'),
-            )),
+            $contextManager,
+            $config['queue'],
             $config['topic'] ?: 'messages',
-            $config['queue'] ?: 'messages',
             $container->getParameter('kernel.debug'),
         ));
         $receiverDefinition->addTag('messenger.receiver');
 
         $senderDefinition = new Definition(QueueInteropSender::class, array(
             new Reference('messenger.transport.default_encoder'),
-            new Definition(AmqpContextManager::class, array(
-                new Reference('enqueue.transport.default.context'),
-            )),
+            $contextManager,
+            $config['queue'],
             $config['topic'] ?: 'messages',
-            $config['queue'] ?: 'messages',
             $container->getParameter('kernel.debug'),
             $config['deliveryDelay'],
             $config['timeToLive'],
