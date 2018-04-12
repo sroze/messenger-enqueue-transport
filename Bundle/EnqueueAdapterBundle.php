@@ -9,10 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage\Bundle;
+namespace Enqueue\MessengerAdapter\Bundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-class EnqueueBridgeBundle extends Bundle
+class EnqueueAdapterBundle extends Bundle
 {
 }

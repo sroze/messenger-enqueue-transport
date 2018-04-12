@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage;
+namespace Enqueue\MessengerAdapter;
 
 use Symfony\Component\Messenger\Transport\ReceiverInterface;
 use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;

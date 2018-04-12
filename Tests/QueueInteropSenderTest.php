@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage\Tests;
+namespace Enqueue\MessengerAdapter\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Interop\Queue\PsrContext;
@@ -17,8 +17,8 @@ use Interop\Queue\PsrProducer;
 use Interop\Queue\PsrDestination;
 use Interop\Queue\PsrMessage;
 use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
-use Sam\Symfony\Bridge\EnqueueMessage\ContextManager;
-use Sam\Symfony\Bridge\EnqueueMessage\QueueInteropSender;
+use Enqueue\MessengerAdapter\ContextManager;
+use Enqueue\MessengerAdapter\QueueInteropSender;
 use Interop\Queue\Exception;
 
 class QueueInteropSenderTest extends TestCase
@@ -88,7 +88,7 @@ class QueueInteropSenderTest extends TestCase
     }
 
     /**
-     * @expectedException \Sam\Symfony\Bridge\EnqueueMessage\Exception\SendingMessageFailedException
+     * @expectedException \Enqueue\MessengerAdapter\Exception\SendingMessageFailedException
      */
     public function testThrow()
     {

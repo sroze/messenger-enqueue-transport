@@ -9,10 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage\Tests;
+namespace Enqueue\MessengerAdapter\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Sam\Symfony\Bridge\EnqueueMessage\Bundle\DependencyInjection\EnqueueBridgeExtension;
+use Enqueue\MessengerAdapter\Bundle\DependencyInjection\EnqueueBridgeExtension;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Extension\ConfigurationExtensionInterface;
 use Prophecy\Argument;

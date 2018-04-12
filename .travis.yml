@@ -21,4 +21,3 @@ install:
 script:
   - php-cs-fixer fix --dry-run --diff --no-ansi
   - vendor/bin/phpunit
-

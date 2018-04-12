@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage;
+namespace Enqueue\MessengerAdapter;
 
 use Interop\Queue\PsrContext;
 use Interop\Queue\PsrMessage;
@@ -17,8 +17,8 @@ use Interop\Queue\PsrProcessor;
 use Symfony\Component\Messenger\Asynchronous\Transport\ReceivedMessage;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
-use Sam\Symfony\Bridge\EnqueueMessage\Exception\RejectMessageException;
-use Sam\Symfony\Bridge\EnqueueMessage\Exception\RequeueMessageException;
+use Enqueue\MessengerAdapter\Exception\RejectMessageException;
+use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
 
 /**
  * The processor could be used with any queue interop compatible consumer, for example Enqueue's QueueConsumer.

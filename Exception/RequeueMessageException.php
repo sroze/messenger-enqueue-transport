@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage\Exception;
+namespace Enqueue\MessengerAdapter\Exception;
 
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 

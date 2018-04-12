@@ -9,11 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage\Tests;
+namespace Enqueue\MessengerAdapter\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Processor;
-use Sam\Symfony\Bridge\EnqueueMessage\Bundle\DependencyInjection\Configuration;
+use Enqueue\MessengerAdapter\Bundle\DependencyInjection\Configuration;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 

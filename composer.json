@@ -1,8 +1,8 @@
 {
-    "name": "sroze/enqueue-bridge",
+    "name": "enqueue/messenger-adapter",
     "type": "symfony-bundle",
-    "description": "Enqueue bridge for Symfony Message component",
-    "keywords": ["symfony", "message", "enqueue"],
+    "description": "Enqueue adapter for Symfony Messenger component",
+    "keywords": ["symfony", "messenger", "enqueue"],
     "homepage": "http://symfony.com",
     "license": "MIT",
     "authors": [
@@ -19,7 +19,7 @@
         "enqueue/enqueue-bundle": "^0.8.0"
     },
     "autoload": {
-        "psr-4": { "Sam\\Symfony\\Bridge\\EnqueueMessage\\": "" }
+        "psr-4": { "Enqueue\\MessengerAdapter\\": "" }
     },
     "minimum-stability": "dev",
     "extra": {

@@ -9,12 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage;
+namespace Enqueue\MessengerAdapter;
 
 use Interop\Queue\Exception;
 use Symfony\Component\Messenger\Transport\SenderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
-use Sam\Symfony\Bridge\EnqueueMessage\Exception\SendingMessageFailedException;
+use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
 
 /**
  * Symfony Message sender to bridge Php-Enqueue producers.

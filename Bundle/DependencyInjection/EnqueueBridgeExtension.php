@@ -9,11 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage\Bundle\DependencyInjection;
+namespace Enqueue\MessengerAdapter\Bundle\DependencyInjection;
 
-use Sam\Symfony\Bridge\EnqueueMessage\AmqpContextManager;
-use Sam\Symfony\Bridge\EnqueueMessage\QueueInteropReceiver;
-use Sam\Symfony\Bridge\EnqueueMessage\QueueInteropSender;
+use Enqueue\MessengerAdapter\AmqpContextManager;
+use Enqueue\MessengerAdapter\QueueInteropReceiver;
+use Enqueue\MessengerAdapter\QueueInteropSender;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;

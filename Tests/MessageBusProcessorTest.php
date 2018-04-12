@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Sam\Symfony\Bridge\EnqueueMessage\Tests;
+namespace Enqueue\MessengerAdapter\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
@@ -18,9 +18,9 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Interop\Queue\PsrMessage;
 use Interop\Queue\PsrContext;
 use Interop\Queue\PsrProcessor;
-use Sam\Symfony\Bridge\EnqueueMessage\MessageBusProcessor;
-use Sam\Symfony\Bridge\EnqueueMessage\Exception\RejectMessageException;
-use Sam\Symfony\Bridge\EnqueueMessage\Exception\RequeueMessageException;
+use Enqueue\MessengerAdapter\MessageBusProcessor;
+use Enqueue\MessengerAdapter\Exception\RejectMessageException;
+use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
 use Prophecy\Argument;
 
 class MessageBusProcessorTest extends TestCase
