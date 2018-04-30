@@ -12,7 +12,7 @@
 namespace Enqueue\MessengerAdapter\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Enqueue\MessengerAdapter\Bundle\DependencyInjection\EnqueueBridgeExtension;
+use Enqueue\MessengerAdapter\Bundle\DependencyInjection\EnqueueAdapterExtension;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Extension\ConfigurationExtensionInterface;
 use Prophecy\Argument;
@@ -24,12 +24,12 @@ class EnqueueBridgeExtensionTest extends TestCase
 
     public function setUp()
     {
-        $this->extension = new EnqueueBridgeExtension();
+        $this->extension = new EnqueueAdapterExtension();
     }
 
     public function testConstruct()
     {
-        $this->extension = new EnqueueBridgeExtension();
+        $this->extension = new EnqueueAdapterExtension();
         $this->assertInstanceOf(ExtensionInterface::class, $this->extension);
         $this->assertInstanceOf(ConfigurationExtensionInterface::class, $this->extension);
     }

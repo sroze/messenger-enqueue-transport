@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-class EnqueueBridgeExtension extends Extension
+class EnqueueAdapterExtension extends Extension
 {
     /**
      * {@inheritdoc}
@@ -36,7 +36,7 @@ class EnqueueBridgeExtension extends Extension
         ));
 
         $receiverDefinition = new Definition(QueueInteropReceiver::class, array(
-            new Reference('messenger.transport.default_decoder'),
+            new Reference('messenger.transport.serializer'),
             $contextManager,
             $config['queue'],
             $config['topic'] ?: 'messages',
@@ -45,7 +45,7 @@ class EnqueueBridgeExtension extends Extension
         $receiverDefinition->addTag('messenger.receiver');
 
         $senderDefinition = new Definition(QueueInteropSender::class, array(
-            new Reference('messenger.transport.default_encoder'),
+            new Reference('messenger.transport.serializer'),
             $contextManager,
             $config['queue'],
             $config['topic'] ?: 'messages',
