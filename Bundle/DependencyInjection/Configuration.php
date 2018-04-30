@@ -24,7 +24,7 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
 
         $treeBuilder
-            ->root('enqueue_bridge')
+            ->root('enqueue_adapter')
                 ->canBeDisabled()
                 ->children()
                     ->scalarNode('queue')->isRequired()->end()
