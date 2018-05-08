@@ -1,6 +1,6 @@
 services:
     enqueue.messenger_transport.factory:
-        class: 'Enqueue\MessengerAdapter\EnqueueTransportFactory'
+        class: 'Enqueue\MessengerAdapter\QueueInteropTransportFactory'
         arguments:
             - "@messenger.transport.decoder"
             - "@messenger.transport.encoder"
