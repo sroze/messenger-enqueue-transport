@@ -13,6 +13,7 @@ namespace Enqueue\MessengerAdapter\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Enqueue\MessengerAdapter\Bundle\DependencyInjection\EnqueueAdapterExtension;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Extension\ConfigurationExtensionInterface;
 use Prophecy\Argument;
@@ -36,15 +37,12 @@ class EnqueueBridgeExtensionTest extends TestCase
 
     public function testLoad()
     {
-        $config = array('enqueue_bridge' => array('queue' => 'message'));
         $containerBuilderProphecy = $this->prophesize(ContainerBuilder::class);
-        $containerBuilderProphecy->getParameter('kernel.debug')->shouldBeCalled();
-        $containerBuilderProphecy->setDefinitions(Argument::that(function ($data) {
-            $this->assertSame(array_keys($data), array('enqueue_bridge.receiver', 'enqueue_bridge.sender'));
+        $containerBuilderProphecy->fileExists(Argument::any())->willReturn(false);
+        $containerBuilderProphecy->setDefinition('enqueue.messenger_transport.factory', Argument::allOf(Argument::type(Definition::class), Argument::that(function(Definition $definition) {
+            return $definition->hasTag('messenger.transport_factory');
+        })))->shouldBeCalled();
 
-            return true;
-        }))->shouldBeCalled();
-
-        $this->extension->load($config, $containerBuilderProphecy->reveal());
+        $this->extension->load(array(), $containerBuilderProphecy->reveal());
     }
 }

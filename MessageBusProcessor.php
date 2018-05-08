@@ -24,17 +24,11 @@ use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
  * The processor could be used with any queue interop compatible consumer, for example Enqueue's QueueConsumer.
  *
  * @author Max Kotliar <kotlyar.maksim@gmail.com>
+ * @author Samuel Roze <samuel.roze@gmail.com>
  */
 class MessageBusProcessor implements PsrProcessor
 {
-    /**
-     * @var MessageBusInterface
-     */
     private $bus;
-
-    /**
-     * @var DecoderInterface
-     */
     private $messageDecoder;
 
     public function __construct(MessageBusInterface $bus, DecoderInterface $messageDecoder)

@@ -11,19 +11,30 @@
 
 namespace Enqueue\MessengerAdapter\Tests;
 
+use Enqueue\MessengerAdapter\QueueInteropTransport;
 use PHPUnit\Framework\TestCase;
 use Interop\Queue\PsrContext;
 use Interop\Queue\PsrProducer;
 use Interop\Queue\PsrDestination;
 use Interop\Queue\PsrMessage;
+use Symfony\Component\Messenger\Transport\SenderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
 use Enqueue\MessengerAdapter\ContextManager;
 use Enqueue\MessengerAdapter\QueueInteropSender;
 use Interop\Queue\Exception;
+use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
 
-class QueueInteropSenderTest extends TestCase
+
+class QueueInteropTransportTest extends TestCase
 {
-    public function testSendWithDebug()
+    public function testInterfaces()
+    {
+        $transport = $this->getTransport();
+
+        $this->assertInstanceOf(SenderInterface::class, $transport);
+    }
+
+    public function testSendAndEnsuresTheInfrastructureExistsWithDebug()
     {
         $topic = 'topic';
         $queue = 'queue';
@@ -53,11 +64,24 @@ class QueueInteropSenderTest extends TestCase
         $encoderProphecy = $this->prophesize(EncoderInterface::class);
         $encoderProphecy->encode($message)->shouldBeCalled()->willReturn(array('body' => 'foo'));
 
-        $queueInteropSender = new QueueInteropSender($encoderProphecy->reveal(), $contextManagerProphecy->reveal(), $topic, $queue, true, 100, 100, 100);
-        $queueInteropSender->send($message);
+        $transport = $this->getTransport(
+            null,
+            $encoderProphecy->reveal(),
+            $contextManagerProphecy->reveal(),
+            [
+                'topic' => ['name' => $topic],
+                'queue' => ['name' => $queue],
+                'deliveryDelay' => 100,
+                'priority' => '100',
+                'timeToLive' => 100
+            ],
+            true
+        );
+
+        $transport->send($message);
     }
 
-    public function testSendWithoutDebug()
+    public function testSendWithoutDebugWillNotVerifyTheInfrastructureForPerformanceReasons()
     {
         $topic = 'topic';
         $queue = 'queue';
@@ -83,8 +107,18 @@ class QueueInteropSenderTest extends TestCase
         $encoderProphecy = $this->prophesize(EncoderInterface::class);
         $encoderProphecy->encode($message)->shouldBeCalled()->willReturn(array('body' => 'foo'));
 
-        $queueInteropSender = new QueueInteropSender($encoderProphecy->reveal(), $contextManagerProphecy->reveal(), $topic, $queue);
-        $queueInteropSender->send($message);
+        $transport = $this->getTransport(
+            null,
+            $encoderProphecy->reveal(),
+            $contextManagerProphecy->reveal(),
+            [
+                'topic' => ['name' => $topic],
+                'queue' => ['name' => $queue],
+            ],
+            false
+        );
+
+        $transport->send($message);
     }
 
     /**
@@ -119,7 +153,28 @@ class QueueInteropSenderTest extends TestCase
         $encoderProphecy = $this->prophesize(EncoderInterface::class);
         $encoderProphecy->encode($message)->shouldBeCalled()->willReturn(array('body' => 'foo'));
 
-        $queueInteropSender = new QueueInteropSender($encoderProphecy->reveal(), $contextManagerProphecy->reveal(), $topic, $queue);
-        $queueInteropSender->send($message);
+        $transport = $this->getTransport(
+            null,
+            $encoderProphecy->reveal(),
+            $contextManagerProphecy->reveal(),
+            [
+                'topic' => ['name' => $topic],
+                'queue' => ['name' => $queue],
+            ],
+            false
+        );
+
+        $transport->send($message);
+    }
+
+    private function getTransport(DecoderInterface $decoder = null, EncoderInterface $encoder = null, ContextManager $contextManager = null, array $options = array(), $debug = false)
+    {
+        return new QueueInteropTransport(
+            $decoder ?: $this->prophesize(DecoderInterface::class)->reveal(),
+            $encoder ?: $this->prophesize(EncoderInterface::class)->reveal(),
+            $contextManager ?: $this->prophesize(ContextManager::class)->reveal(),
+            $options,
+            $debug
+        );
     }
 }
