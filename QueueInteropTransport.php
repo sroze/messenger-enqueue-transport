@@ -145,7 +145,7 @@ class QueueInteropTransport implements TransportInterface
         $this->shouldStop = true;
     }
 
-    private function getDestination() : array
+    private function getDestination(): array
     {
         return array(
             'topic' => $this->options['topic']['name'] ?? 'messages',

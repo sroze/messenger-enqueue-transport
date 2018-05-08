@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Enqueue\MessengerAdapter;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -66,7 +75,7 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
         $parsedDsn = parse_url($dsn);
         $enqueueContextName = $parsedDsn['host'];
 
-        $amqpOptions = [];
+        $amqpOptions = array();
         if (isset($parsedUrl['query'])) {
             parse_str($parsedUrl['query'], $parsedQuery);
 
@@ -81,11 +90,11 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
             ));
         }
 
-        return [
+        return array(
             new AmqpContextManager(
                 $this->container->get($contextService)
             ),
-            $amqpOptions
-        ];
+            $amqpOptions,
+        );
     }
 }

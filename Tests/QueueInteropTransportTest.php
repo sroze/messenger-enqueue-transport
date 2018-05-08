@@ -20,10 +20,8 @@ use Interop\Queue\PsrMessage;
 use Symfony\Component\Messenger\Transport\SenderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
 use Enqueue\MessengerAdapter\ContextManager;
-use Enqueue\MessengerAdapter\QueueInteropSender;
 use Interop\Queue\Exception;
 use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
-
 
 class QueueInteropTransportTest extends TestCase
 {
@@ -68,13 +66,13 @@ class QueueInteropTransportTest extends TestCase
             null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
-            [
-                'topic' => ['name' => $topic],
-                'queue' => ['name' => $queue],
+            array(
+                'topic' => array('name' => $topic),
+                'queue' => array('name' => $queue),
                 'deliveryDelay' => 100,
                 'priority' => '100',
-                'timeToLive' => 100
-            ],
+                'timeToLive' => 100,
+            ),
             true
         );
 
@@ -111,10 +109,10 @@ class QueueInteropTransportTest extends TestCase
             null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
-            [
-                'topic' => ['name' => $topic],
-                'queue' => ['name' => $queue],
-            ],
+            array(
+                'topic' => array('name' => $topic),
+                'queue' => array('name' => $queue),
+            ),
             false
         );
 
@@ -157,10 +155,10 @@ class QueueInteropTransportTest extends TestCase
             null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
-            [
-                'topic' => ['name' => $topic],
-                'queue' => ['name' => $queue],
-            ],
+            array(
+                'topic' => array('name' => $topic),
+                'queue' => array('name' => $queue),
+            ),
             false
         );
 

@@ -1,12 +1,20 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Enqueue\MessengerAdapter\Tests;
 
 use Enqueue\MessengerAdapter\QueueInteropTransport;
 use Enqueue\MessengerAdapter\QueueInteropTransportFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Enqueue\MessengerAdapter\AmqpContextManager;
-use Enqueue\MessengerAdapter\EnqueueTransportFactory;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
