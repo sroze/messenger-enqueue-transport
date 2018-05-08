@@ -1,8 +1,6 @@
 # Enqueue's transport for Symfony Messenger component
 
-**Experimental warning:** this transport is very experimental.
-
-This Symfony Message transport allows you to use Enqueue.
+This Symfony Messenger transport allows you to use Enqueue to send and receive your messages from all the supported brokers.
 
 ## Usage
 
@@ -12,7 +10,7 @@ This Symfony Message transport allows you to use Enqueue.
 composer req enqueue/messenger-transport
 ```
 
-2. Configure the Enqueue bundle as you would normaly do (see the Documentation). If you are using the recipes, you should
+2. Configure the Enqueue bundle as you would normaly do ([see Enqueue's Bundle documentation](https://github.com/php-enqueue/enqueue-dev/blob/master/docs/bundle/quick_tour.md)). If you are using the recipes, you should
    just have to configure the environment variables to configure the `default` Enqueue transport:
    
 ```bash
