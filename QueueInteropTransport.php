@@ -11,13 +11,19 @@
 
 namespace Enqueue\MessengerAdapter;
 
+use Enqueue\AmqpTools\DelayStrategyAware;
+use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
+use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
 use Enqueue\MessengerAdapter\Exception\RejectMessageException;
 use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Interop\Queue\Exception as InteropQueueException;
 use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
+use Symfony\Component\OptionsResolver\Options;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Symfony Messenger transport.
@@ -39,10 +45,11 @@ class QueueInteropTransport implements TransportInterface
         $this->decoder = $decoder;
         $this->encoder = $encoder;
         $this->contextManager = $contextManager;
-        $this->options = $options;
         $this->debug = $debug;
 
-        $this->receiveTimeout = 1000; // 1s
+        $resolver = new OptionsResolver();
+        $this->configureOptions($resolver);
+        $this->options = $resolver->resolve($options);
     }
 
     /**
@@ -93,7 +100,7 @@ class QueueInteropTransport implements TransportInterface
     /**
      * {@inheritdoc}
      */
-    public function send($message): void
+    public function send(Envelope $message): void
     {
         $psrContext = $this->contextManager->psrContext();
         $destination = $this->getDestination();
@@ -114,6 +121,9 @@ class QueueInteropTransport implements TransportInterface
         $producer = $psrContext->createProducer();
 
         if (isset($this->options['deliveryDelay'])) {
+            if ($producer instanceof DelayStrategyAware) {
+                $producer->setDelayStrategy($this->options['delayStrategy']);
+            }
             $producer->setDeliveryDelay($this->options['deliveryDelay']);
         }
         if (isset($this->options['priority'])) {
@@ -145,11 +155,35 @@ class QueueInteropTransport implements TransportInterface
         $this->shouldStop = true;
     }
 
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults(array(
+            'receiveTimeout' => null,
+            'deliveryDelay' => null,
+            'delayStrategy' => RabbitMqDelayPluginDelayStrategy::class,
+            'priority' => null,
+            'timeToLive' => null,
+            'topic' => array('name' => 'messages'),
+            'queue' => array('name' => 'messages'),
+        ));
+
+        $resolver->setAllowedTypes('receiveTimeout', array('null', 'int'));
+        $resolver->setAllowedTypes('deliveryDelay', array('null', 'int'));
+        $resolver->setAllowedTypes('priority', array('null', 'int'));
+        $resolver->setAllowedTypes('timeToLive', array('null', 'int'));
+        $resolver->setAllowedTypes('delayStrategy', array('null', 'string'));
+
+        $resolver->setAllowedValues('delayStrategy', array(null, RabbitMqDelayPluginDelayStrategy::class, RabbitMqDlxDelayStrategy::class));
+        $resolver->setNormalizer('delayStrategy', function (Options $options, $value) {
+            return null !== $value ? new $value() : null;
+        });
+    }
+
     private function getDestination(): array
     {
         return array(
-            'topic' => $this->options['topic']['name'] ?? 'messages',
-            'queue' => $this->options['queue']['name'] ?? 'messages',
+            'topic' => $this->options['topic']['name'],
+            'queue' => $this->options['queue']['name'],
         );
     }
 }

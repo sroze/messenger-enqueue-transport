@@ -12,6 +12,7 @@
 namespace Enqueue\MessengerAdapter\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
 use Symfony\Component\Messenger\Asynchronous\Transport\ReceivedMessage;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -39,6 +40,7 @@ class MessageBusProcessorTest extends TestCase
     {
         $message = $this->getTestMessage();
         $receivedMessage = new ReceivedMessage('test');
+        $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(PsrContext::class);
         $busProphecy = $this->prophesize(MessageBusInterface::class);
         $busProphecy->dispatch($receivedMessage)->shouldBeCalled();
@@ -47,8 +49,7 @@ class MessageBusProcessorTest extends TestCase
             'body' => 'body',
             'headers' => array('header'),
             'properties' => 'props',
-        ))->shouldBeCalled()->willReturn($receivedMessage);
-
+        ))->shouldBeCalled()->willReturn($envelope);
         $messageBusProcessor = new MessageBusProcessor($busProphecy->reveal(), $decoderProphecy->reveal());
         $this->assertSame(PsrProcessor::ACK, $messageBusProcessor->process($message, $contextProphecy->reveal()));
     }
@@ -57,12 +58,12 @@ class MessageBusProcessorTest extends TestCase
     {
         $message = $this->getTestMessage();
         $receivedMessage = new ReceivedMessage('test');
+        $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(PsrContext::class);
         $decoderProphecy = $this->prophesize(DecoderInterface::class);
-        $decoderProphecy->decode(Argument::any())->shouldBeCalled()->willReturn($receivedMessage);
+        $decoderProphecy->decode(Argument::any())->shouldBeCalled()->willReturn($envelope);
         $busProphecy = $this->prophesize(MessageBusInterface::class);
         $busProphecy->dispatch($receivedMessage)->shouldBeCalled()->willThrow(new RejectMessageException());
-
         $messageBusProcessor = new MessageBusProcessor($busProphecy->reveal(), $decoderProphecy->reveal());
         $this->assertSame(PsrProcessor::REJECT, $messageBusProcessor->process($message, $contextProphecy->reveal()));
     }
@@ -71,12 +72,12 @@ class MessageBusProcessorTest extends TestCase
     {
         $message = $this->getTestMessage();
         $receivedMessage = new ReceivedMessage('test');
+        $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(PsrContext::class);
         $decoderProphecy = $this->prophesize(DecoderInterface::class);
-        $decoderProphecy->decode(Argument::any())->shouldBeCalled()->willReturn($receivedMessage);
+        $decoderProphecy->decode(Argument::any())->shouldBeCalled()->willReturn($envelope);
         $busProphecy = $this->prophesize(MessageBusInterface::class);
         $busProphecy->dispatch($receivedMessage)->shouldBeCalled()->willThrow(new RequeueMessageException());
-
         $messageBusProcessor = new MessageBusProcessor($busProphecy->reveal(), $decoderProphecy->reveal());
         $this->assertSame(PsrProcessor::REQUEUE, $messageBusProcessor->process($message, $contextProphecy->reveal()));
     }
@@ -85,12 +86,12 @@ class MessageBusProcessorTest extends TestCase
     {
         $message = $this->getTestMessage();
         $receivedMessage = new ReceivedMessage('test');
+        $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(PsrContext::class);
         $decoderProphecy = $this->prophesize(DecoderInterface::class);
-        $decoderProphecy->decode(Argument::any())->shouldBeCalled()->willReturn($receivedMessage);
+        $decoderProphecy->decode(Argument::any())->shouldBeCalled()->willReturn($envelope);
         $busProphecy = $this->prophesize(MessageBusInterface::class);
         $busProphecy->dispatch($receivedMessage)->shouldBeCalled()->willThrow(new \InvalidArgumentException());
-
         $messageBusProcessor = new MessageBusProcessor($busProphecy->reveal(), $decoderProphecy->reveal());
         $this->assertSame(PsrProcessor::REJECT, $messageBusProcessor->process($message, $contextProphecy->reveal()));
     }

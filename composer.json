@@ -17,7 +17,9 @@
     ],
     "require": {
         "enqueue/enqueue-bundle": "^0.8.0",
-        "symfony/messenger": "^4.1@dev"
+        "symfony/messenger": "^4.1.0",
+        "symfony/options-resolver": "^4.1",
+        "enqueue/amqp-tools": "^0.8.23"
     },
     "autoload": {
         "psr-4": { "Enqueue\\MessengerAdapter\\": "" }
