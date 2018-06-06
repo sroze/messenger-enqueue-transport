@@ -11,6 +11,7 @@
 
 namespace Enqueue\MessengerAdapter;
 
+use Interop\Queue\PsrContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
@@ -29,7 +30,6 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
     private $decoder;
     private $encoder;
     private $debug;
-
     private $container;
 
     public function __construct(DecoderInterface $decoder, EncoderInterface $encoder, ContainerInterface $container, bool $debug = false)
@@ -54,7 +54,7 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
 
     public function createTransport(string $dsn, array $options): TransportInterface
     {
-        list($contextManager, $options) = $this->parseDsn($dsn);
+        [$contextManager, $options] = $this->parseDsn($dsn);
 
         return new QueueInteropTransport(
             $this->decoder,
@@ -70,15 +70,17 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
         return 0 === strpos($dsn, 'enqueue://');
     }
 
-    private function parseDsn(string $dsn)
+    private function parseDsn(string $dsn): array
     {
         $parsedDsn = parse_url($dsn);
         $enqueueContextName = $parsedDsn['host'];
 
         $amqpOptions = array();
-        if (isset($parsedUrl['query'])) {
-            parse_str($parsedUrl['query'], $parsedQuery);
-
+        if (isset($parsedDsn['query'])) {
+            parse_str($parsedDsn['query'], $parsedQuery);
+            $parsedQuery = array_map(function ($e) {
+                return is_numeric($e) ? (int) $e : $e;
+            }, $parsedQuery);
             $amqpOptions = array_replace_recursive($amqpOptions, $parsedQuery);
         }
 
@@ -90,10 +92,13 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
             ));
         }
 
+        $psrContext = $this->container->get($contextService);
+        if (!$psrContext instanceof PsrContext) {
+            throw new \RuntimeException(sprintf('Service "%s" not instanceof PsrContext', $contextService));
+        }
+
         return array(
-            new AmqpContextManager(
-                $this->container->get($contextService)
-            ),
+            new AmqpContextManager($psrContext),
             $amqpOptions,
         );
     }

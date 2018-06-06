@@ -11,12 +11,15 @@
 
 namespace Enqueue\MessengerAdapter\Tests;
 
+use Enqueue\AmqpTools\DelayStrategyAware;
+use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\MessengerAdapter\QueueInteropTransport;
 use PHPUnit\Framework\TestCase;
 use Interop\Queue\PsrContext;
 use Interop\Queue\PsrProducer;
 use Interop\Queue\PsrDestination;
 use Interop\Queue\PsrMessage;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\SenderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
 use Enqueue\MessengerAdapter\ContextManager;
@@ -38,14 +41,16 @@ class QueueInteropTransportTest extends TestCase
         $queue = 'queue';
         $message = new \stdClass();
         $message->foo = 'bar';
+        $envelope = new Envelope($message);
 
         $psrMessageProphecy = $this->prophesize(PsrMessage::class);
         $psrMessage = $psrMessageProphecy->reveal();
         $topicProphecy = $this->prophesize(PsrDestination::class);
         $psrTopic = $topicProphecy->reveal();
 
-        $producerProphecy = $this->prophesize(PsrProducer::class);
+        $producerProphecy = $this->prophesize(PsrProducerWithDelay::class);
         $producerProphecy->setDeliveryDelay(100)->shouldBeCalled();
+        $producerProphecy->setDelayStrategy(new RabbitMqDelayPluginDelayStrategy())->shouldBeCalled();
         $producerProphecy->setPriority(100)->shouldBeCalled();
         $producerProphecy->setTimeToLive(100)->shouldBeCalled();
         $producerProphecy->send($psrTopic, $psrMessage)->shouldBeCalled();
@@ -60,7 +65,7 @@ class QueueInteropTransportTest extends TestCase
         $contextManagerProphecy->ensureExists(array('topic' => $topic, 'queue' => $queue))->shouldBeCalled();
 
         $encoderProphecy = $this->prophesize(EncoderInterface::class);
-        $encoderProphecy->encode($message)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
 
         $transport = $this->getTransport(
             null,
@@ -70,13 +75,15 @@ class QueueInteropTransportTest extends TestCase
                 'topic' => array('name' => $topic),
                 'queue' => array('name' => $queue),
                 'deliveryDelay' => 100,
-                'priority' => '100',
+                'delayStrategy' => RabbitMqDelayPluginDelayStrategy::class,
+                'priority' => 100,
                 'timeToLive' => 100,
+                'receiveTimeout' => 100,
             ),
             true
         );
 
-        $transport->send($message);
+        $transport->send($envelope);
     }
 
     public function testSendWithoutDebugWillNotVerifyTheInfrastructureForPerformanceReasons()
@@ -85,6 +92,7 @@ class QueueInteropTransportTest extends TestCase
         $queue = 'queue';
         $message = new \stdClass();
         $message->foo = 'bar';
+        $envelope = new Envelope($message);
 
         $psrMessageProphecy = $this->prophesize(PsrMessage::class);
         $psrMessage = $psrMessageProphecy->reveal();
@@ -103,7 +111,7 @@ class QueueInteropTransportTest extends TestCase
         $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
 
         $encoderProphecy = $this->prophesize(EncoderInterface::class);
-        $encoderProphecy->encode($message)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
 
         $transport = $this->getTransport(
             null,
@@ -116,7 +124,7 @@ class QueueInteropTransportTest extends TestCase
             false
         );
 
-        $transport->send($message);
+        $transport->send($envelope);
     }
 
     /**
@@ -128,6 +136,7 @@ class QueueInteropTransportTest extends TestCase
         $queue = 'queue';
         $message = new \stdClass();
         $message->foo = 'bar';
+        $envelope = new Envelope($message);
 
         $psrMessageProphecy = $this->prophesize(PsrMessage::class);
         $psrMessage = $psrMessageProphecy->reveal();
@@ -149,7 +158,7 @@ class QueueInteropTransportTest extends TestCase
         $contextManagerProphecy->recoverException($exception, array('topic' => $topic, 'queue' => $queue))->shouldBeCalled()->willReturn(false);
 
         $encoderProphecy = $this->prophesize(EncoderInterface::class);
-        $encoderProphecy->encode($message)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
 
         $transport = $this->getTransport(
             null,
@@ -162,7 +171,7 @@ class QueueInteropTransportTest extends TestCase
             false
         );
 
-        $transport->send($message);
+        $transport->send($envelope);
     }
 
     private function getTransport(DecoderInterface $decoder = null, EncoderInterface $encoder = null, ContextManager $contextManager = null, array $options = array(), $debug = false)
@@ -175,4 +184,8 @@ class QueueInteropTransportTest extends TestCase
             $debug
         );
     }
+}
+
+interface PsrProducerWithDelay extends PsrProducer, DelayStrategyAware
+{
 }

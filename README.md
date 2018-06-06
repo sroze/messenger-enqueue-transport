@@ -60,6 +60,8 @@ enqueue://default
     ?queue[name]=queue_name
     &topic[name]=topic_name
     &deliveryDelay=1800
-    &timeToLime=3600
+    &delayStrategy=Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy
+    &timeToLive=3600
+    &receiveTimeout=1000
     &priority=1
 ```
