@@ -51,6 +51,23 @@ class QueueInteropTransportFactoryTest extends TestCase
         $this->assertEquals($expectedTransport, $factory->createReceiver($dsn, array()));
     }
 
+    public function testCreatesTransportWithQuery()
+    {
+        $queuePsrContext = $this->prophesize(PsrContext::class)->reveal();
+        $decoder = $this->prophesize(DecoderInterface::class);
+        $encoder = $this->prophesize(EncoderInterface::class);
+
+        $container = $this->prophesize(ContainerInterface::class);
+        $container->has('enqueue.transport.default.context')->willReturn(true);
+        $container->get('enqueue.transport.default.context')->willReturn($queuePsrContext);
+
+        $factory = $this->getFactory($decoder->reveal(), $encoder->reveal(), $container->reveal());
+        $dsn = 'enqueue://default?foo=bar&priority=1';
+
+        $expectedTransport = new QueueInteropTransport($decoder->reveal(), $encoder->reveal(), new AmqpContextManager($queuePsrContext), array('foo' => 'bar', 'priority' => 1), true);
+        $this->assertEquals($expectedTransport, $factory->createTransport($dsn, array()));
+    }
+
     /**
      * @expectedException \RuntimeException
      * @expectedExceptionMessage Can't find Enqueue's transport named "foo": Service "enqueue.transport.foo.context" is not found.

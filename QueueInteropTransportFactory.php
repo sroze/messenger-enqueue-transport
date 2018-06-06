@@ -76,8 +76,8 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
         $enqueueContextName = $parsedDsn['host'];
 
         $amqpOptions = array();
-        if (isset($parsedUrl['query'])) {
-            parse_str($parsedUrl['query'], $parsedQuery);
+        if (isset($parsedDsn['query'])) {
+            parse_str($parsedDsn['query'], $parsedQuery);
 
             $amqpOptions = array_replace_recursive($amqpOptions, $parsedQuery);
         }
