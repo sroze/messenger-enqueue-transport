@@ -22,6 +22,7 @@ use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Interop\Queue\Exception as InteropQueueException;
 use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
+use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -58,7 +59,7 @@ class QueueInteropTransport implements TransportInterface
     public function receive(callable $handler): void
     {
         $psrContext = $this->contextManager->psrContext();
-        $destination = $this->getDestination();
+        $destination = $this->getDestination(null);
         $queue = $psrContext->createQueue($destination['queue']);
         $consumer = $psrContext->createConsumer($queue);
 
@@ -104,7 +105,7 @@ class QueueInteropTransport implements TransportInterface
     public function send(Envelope $message): void
     {
         $psrContext = $this->contextManager->psrContext();
-        $destination = $this->getDestination();
+        $destination = $this->getDestination($message);
         $topic = $psrContext->createTopic($destination['topic']);
 
         if ($this->debug) {
@@ -180,10 +181,13 @@ class QueueInteropTransport implements TransportInterface
         });
     }
 
-    private function getDestination(): array
+    private function getDestination(?Envelope $message): array
     {
+        $configuration = $message ? $message->get(TransportConfiguration::class) : null;
+        $topic = null !== $configuration ? $configuration->getTopic() : null;
+
         return array(
-            'topic' => $this->options['topic']['name'],
+            'topic' => $topic ?? $this->options['topic']['name'],
             'queue' => $this->options['queue']['name'],
         );
     }

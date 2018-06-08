@@ -12,7 +12,7 @@ composer req enqueue/messenger-adapter
 
 2. Configure the Enqueue bundle as you would normaly do ([see Enqueue's Bundle documentation](https://github.com/php-enqueue/enqueue-dev/blob/master/docs/bundle/quick_tour.md)). If you are using the recipes, you should
    just have to configure the environment variables to configure the `default` Enqueue transport:
-   
+
 ```bash
 # .env
 # ...
@@ -52,8 +52,7 @@ bin/console messenger:consume-messages amqp
 
 ### Configure the queue(s) and exchange(s)
 
-In the transport DSN, you can add extra configuration. Here is the reference DSN (note that the values are just for the 
-example):
+In the transport DSN, you can add extra configuration. Here is the reference DSN (note that the values are just for the example):
 
 ```
 enqueue://default
@@ -64,4 +63,17 @@ enqueue://default
     &timeToLive=3600
     &receiveTimeout=1000
     &priority=1
+```
+
+### Send a message on a specific topic
+
+You can send a message on a specific topic using `TransportConfiguration` envelope item with your message:
+```php
+use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
+
+// ...
+
+$this->bus->dispatch((new Envelope($message))->with(new TransportConfiguration(
+    ['topic' => 'specific-topic']
+)));
 ```
