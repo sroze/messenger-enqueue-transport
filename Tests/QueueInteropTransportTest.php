@@ -14,6 +14,8 @@ namespace Enqueue\MessengerAdapter\Tests;
 use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\MessengerAdapter\QueueInteropTransport;
+use Interop\Queue\PsrConsumer;
+use Interop\Queue\PsrQueue;
 use PHPUnit\Framework\TestCase;
 use Interop\Queue\PsrContext;
 use Interop\Queue\PsrProducer;
@@ -172,6 +174,31 @@ class QueueInteropTransportTest extends TestCase
         );
 
         $transport->send($envelope);
+    }
+
+    public function testNullHandler()
+    {
+        $psrConsumerProphecy = $this->prophesize(PsrConsumer::class);
+        $psrConsumerProphecy->receive(0)->shouldBeCalled()->willReturn(null);
+
+        $psrQueueProphecy = $this->prophesize(PsrQueue::class);
+        $psrQueue = $psrQueueProphecy->reveal();
+
+        $psrContextProphecy = $this->prophesize(PsrContext::class);
+        $psrContextProphecy->createQueue('messages')->shouldBeCalled()->willReturn($psrQueue);
+        $psrContextProphecy->createConsumer($psrQueue)->shouldBeCalled()->willReturn($psrConsumerProphecy->reveal());
+
+        $contextManagerProphecy = $this->prophesize(ContextManager::class);
+        $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
+
+        $transport = $this->getTransport(null, null, $contextManagerProphecy->reveal());
+        $handlerArgument = 'not-null';
+        $handler = function ($argument) use (&$handlerArgument, $transport) {
+            $handlerArgument = $argument;
+            $transport->stop();
+        };
+        $transport->receive($handler);
+        $this->assertNull($handlerArgument);
     }
 
     private function getTransport(DecoderInterface $decoder = null, EncoderInterface $encoder = null, ContextManager $contextManager = null, array $options = array(), $debug = false)
