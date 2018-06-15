@@ -69,6 +69,7 @@ class QueueInteropTransport implements TransportInterface
         while (!$this->shouldStop) {
             try {
                 if (null === ($message = $consumer->receive($this->options['receiveTimeout'] ?? 0))) {
+                    $handler(null);
                     continue;
                 }
             } catch (\Exception $e) {
