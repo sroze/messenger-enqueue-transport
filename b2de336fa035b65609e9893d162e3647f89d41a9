@@ -1,0 +1,11 @@
+---------------------------------------------------------------------------
+
+by sroze at 2018-06-08T10:38:00Z
+
+Can you add a test as well?
+
+---------------------------------------------------------------------------
+
+by skck at 2018-06-08T12:14:12Z
+
+I've added the test to cover calling the handler with null in case there are no messages received
