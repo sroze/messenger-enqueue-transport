@@ -25,6 +25,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\SenderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
 use Enqueue\MessengerAdapter\ContextManager;
+use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Interop\Queue\Exception;
 use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
 
@@ -124,6 +125,49 @@ class QueueInteropTransportTest extends TestCase
                 'queue' => array('name' => $queue),
             ),
             false
+        );
+
+        $transport->send($envelope);
+    }
+
+    public function testSendMessageOnSpecificTopic()
+    {
+        $topic = 'topic';
+        $queue = 'queue';
+        $specificTopic = 'specific-topic';
+        $message = new \stdClass();
+        $message->foo = 'bar';
+        $envelope = (new Envelope($message))->with(new TransportConfiguration(array('topic' => $specificTopic)));
+
+        $psrMessageProphecy = $this->prophesize(PsrMessage::class);
+        $psrMessage = $psrMessageProphecy->reveal();
+        $topicProphecy = $this->prophesize(PsrDestination::class);
+        $psrTopic = $topicProphecy->reveal();
+
+        $producerProphecy = $this->prophesize(PsrProducer::class);
+        $producerProphecy->send($psrTopic, $psrMessage)->shouldBeCalled();
+
+        $psrContextProphecy = $this->prophesize(PsrContext::class);
+        $psrContextProphecy->createTopic($specificTopic)->shouldBeCalled()->willReturn($psrTopic);
+        $psrContextProphecy->createProducer()->shouldBeCalled()->willReturn($producerProphecy->reveal());
+        $psrContextProphecy->createMessage('foo', array(), array())->shouldBeCalled()->willReturn($psrMessage);
+
+        $contextManagerProphecy = $this->prophesize(ContextManager::class);
+        $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
+        $contextManagerProphecy->ensureExists(array('topic' => $specificTopic, 'queue' => $queue))->shouldBeCalled();
+
+        $encoderProphecy = $this->prophesize(EncoderInterface::class);
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+
+        $transport = $this->getTransport(
+            null,
+            $encoderProphecy->reveal(),
+            $contextManagerProphecy->reveal(),
+            array(
+                'topic' => array('name' => $topic),
+                'queue' => array('name' => $queue),
+            ),
+            true
         );
 
         $transport->send($envelope);
