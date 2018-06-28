@@ -11,10 +11,12 @@
 
 namespace Enqueue\MessengerAdapter;
 
+use Enqueue\AmqpTools\DelayStrategy;
 use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
-use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
+use Enqueue\MessengerAdapter\EnvelopeItem\AttemptsMessage;
 use Enqueue\MessengerAdapter\Exception\RejectMessageException;
+use Enqueue\MessengerAdapter\Exception\RepeatMessageException;
 use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
@@ -82,13 +84,26 @@ class QueueInteropTransport implements TransportInterface
             }
 
             try {
-                $handler($this->decoder->decode(array(
-                    'body' => $message->getBody(),
-                    'headers' => $message->getHeaders(),
-                    'properties' => $message->getProperties(),
-                )));
+                $envelope = $this->decoder->decode(
+                    array(
+                        'body' => $message->getBody(),
+                        'headers' => $message->getHeaders(),
+                        'properties' => $message->getProperties(),
+                    )
+                );
+                $handler($envelope);
 
                 $consumer->acknowledge($message);
+            } catch (RepeatMessageException $e) {
+                $consumer->reject($message);
+
+                $attempts = $envelope->get(AttemptsMessage::class);
+                if (null === $attempts) {
+                    $attempts = new AttemptsMessage($e->getTimeToDelay(), $e->getMaxAttempts());
+                }
+                if ($attempts->isRepeatable()) {
+                    $this->send($envelope->with($attempts));
+                }
             } catch (RejectMessageException $e) {
                 $consumer->reject($message);
             } catch (RequeueMessageException $e) {
@@ -135,6 +150,12 @@ class QueueInteropTransport implements TransportInterface
             $producer->setTimeToLive($this->options['timeToLive']);
         }
 
+        /** @var AttemptsMessage $attempts */
+        $attempts = $message->get(AttemptsMessage::class);
+        if (null !== $attempts) {
+            $producer->setDeliveryDelay($attempts->getNowDelayToMs());
+        }
+
         try {
             $producer->send($topic, $psrMessage);
         } catch (InteropQueueException $e) {
@@ -175,14 +196,27 @@ class QueueInteropTransport implements TransportInterface
         $resolver->setAllowedTypes('timeToLive', array('null', 'int'));
         $resolver->setAllowedTypes('delayStrategy', array('null', 'string'));
 
-        $resolver->setAllowedValues('delayStrategy', array(null, RabbitMqDelayPluginDelayStrategy::class, RabbitMqDlxDelayStrategy::class));
         $resolver->setNormalizer('delayStrategy', function (Options $options, $value) {
-            return null !== $value ? new $value() : null;
+            if (null === $value) {
+                return null;
+            }
+
+            $delayStrategy = new $value();
+            if (!$delayStrategy instanceof DelayStrategy) {
+                throw new \InvalidArgumentException(sprintf(
+                    'The delayStrategy option must be either instance of "%s", but got "%s"',
+                    DelayStrategy::class,
+                    $value
+                ));
+            }
+
+            return $delayStrategy;
         });
     }
 
     private function getDestination(?Envelope $message): array
     {
+        /** @var TransportConfiguration|null $configuration */
         $configuration = $message ? $message->get(TransportConfiguration::class) : null;
         $topic = null !== $configuration ? $configuration->getTopic() : null;
 

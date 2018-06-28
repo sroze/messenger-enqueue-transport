@@ -13,6 +13,7 @@ namespace Enqueue\MessengerAdapter\Tests;
 
 use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
+use Enqueue\MessengerAdapter\Exception\RepeatMessageException;
 use Enqueue\MessengerAdapter\QueueInteropTransport;
 use Interop\Queue\PsrConsumer;
 use Interop\Queue\PsrQueue;
@@ -61,28 +62,28 @@ class QueueInteropTransportTest extends TestCase
         $psrContextProphecy = $this->prophesize(PsrContext::class);
         $psrContextProphecy->createTopic($topic)->shouldBeCalled()->willReturn($psrTopic);
         $psrContextProphecy->createProducer()->shouldBeCalled()->willReturn($producerProphecy->reveal());
-        $psrContextProphecy->createMessage('foo', array(), array())->shouldBeCalled()->willReturn($psrMessage);
+        $psrContextProphecy->createMessage('foo', [], [])->shouldBeCalled()->willReturn($psrMessage);
 
         $contextManagerProphecy = $this->prophesize(ContextManager::class);
         $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
-        $contextManagerProphecy->ensureExists(array('topic' => $topic, 'queue' => $queue))->shouldBeCalled();
+        $contextManagerProphecy->ensureExists(['topic' => $topic, 'queue' => $queue])->shouldBeCalled();
 
         $encoderProphecy = $this->prophesize(EncoderInterface::class);
-        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(['body' => 'foo']);
 
         $transport = $this->getTransport(
             null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
-            array(
-                'topic' => array('name' => $topic),
-                'queue' => array('name' => $queue),
-                'deliveryDelay' => 100,
-                'delayStrategy' => RabbitMqDelayPluginDelayStrategy::class,
-                'priority' => 100,
-                'timeToLive' => 100,
+            [
+                'topic'          => ['name' => $topic],
+                'queue'          => ['name' => $queue],
+                'deliveryDelay'  => 100,
+                'delayStrategy'  => RabbitMqDelayPluginDelayStrategy::class,
+                'priority'       => 100,
+                'timeToLive'     => 100,
                 'receiveTimeout' => 100,
-            ),
+            ],
             true
         );
 
@@ -108,22 +109,22 @@ class QueueInteropTransportTest extends TestCase
         $psrContextProphecy = $this->prophesize(PsrContext::class);
         $psrContextProphecy->createTopic($topic)->shouldBeCalled()->willReturn($psrTopic);
         $psrContextProphecy->createProducer()->shouldBeCalled()->willReturn($producerProphecy->reveal());
-        $psrContextProphecy->createMessage('foo', array(), array())->shouldBeCalled()->willReturn($psrMessage);
+        $psrContextProphecy->createMessage('foo', [], [])->shouldBeCalled()->willReturn($psrMessage);
 
         $contextManagerProphecy = $this->prophesize(ContextManager::class);
         $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
 
         $encoderProphecy = $this->prophesize(EncoderInterface::class);
-        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(['body' => 'foo']);
 
         $transport = $this->getTransport(
             null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
-            array(
-                'topic' => array('name' => $topic),
-                'queue' => array('name' => $queue),
-            ),
+            [
+                'topic' => ['name' => $topic],
+                'queue' => ['name' => $queue],
+            ],
             false
         );
 
@@ -137,7 +138,7 @@ class QueueInteropTransportTest extends TestCase
         $specificTopic = 'specific-topic';
         $message = new \stdClass();
         $message->foo = 'bar';
-        $envelope = (new Envelope($message))->with(new TransportConfiguration(array('topic' => $specificTopic)));
+        $envelope = (new Envelope($message))->with(new TransportConfiguration(['topic' => $specificTopic]));
 
         $psrMessageProphecy = $this->prophesize(PsrMessage::class);
         $psrMessage = $psrMessageProphecy->reveal();
@@ -150,23 +151,23 @@ class QueueInteropTransportTest extends TestCase
         $psrContextProphecy = $this->prophesize(PsrContext::class);
         $psrContextProphecy->createTopic($specificTopic)->shouldBeCalled()->willReturn($psrTopic);
         $psrContextProphecy->createProducer()->shouldBeCalled()->willReturn($producerProphecy->reveal());
-        $psrContextProphecy->createMessage('foo', array(), array())->shouldBeCalled()->willReturn($psrMessage);
+        $psrContextProphecy->createMessage('foo', [], [])->shouldBeCalled()->willReturn($psrMessage);
 
         $contextManagerProphecy = $this->prophesize(ContextManager::class);
         $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
-        $contextManagerProphecy->ensureExists(array('topic' => $specificTopic, 'queue' => $queue))->shouldBeCalled();
+        $contextManagerProphecy->ensureExists(['topic' => $specificTopic, 'queue' => $queue])->shouldBeCalled();
 
         $encoderProphecy = $this->prophesize(EncoderInterface::class);
-        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(['body' => 'foo']);
 
         $transport = $this->getTransport(
             null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
-            array(
-                'topic' => array('name' => $topic),
-                'queue' => array('name' => $queue),
-            ),
+            [
+                'topic' => ['name' => $topic],
+                'queue' => ['name' => $queue],
+            ],
             true
         );
 
@@ -197,23 +198,23 @@ class QueueInteropTransportTest extends TestCase
         $psrContextProphecy = $this->prophesize(PsrContext::class);
         $psrContextProphecy->createTopic($topic)->shouldBeCalled()->willReturn($psrTopic);
         $psrContextProphecy->createProducer()->shouldBeCalled()->willReturn($producerProphecy->reveal());
-        $psrContextProphecy->createMessage('foo', array(), array())->shouldBeCalled()->willReturn($psrMessage);
+        $psrContextProphecy->createMessage('foo', [], [])->shouldBeCalled()->willReturn($psrMessage);
 
         $contextManagerProphecy = $this->prophesize(ContextManager::class);
         $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
-        $contextManagerProphecy->recoverException($exception, array('topic' => $topic, 'queue' => $queue))->shouldBeCalled()->willReturn(false);
+        $contextManagerProphecy->recoverException($exception, ['topic' => $topic, 'queue' => $queue])->shouldBeCalled()->willReturn(false);
 
         $encoderProphecy = $this->prophesize(EncoderInterface::class);
-        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(['body' => 'foo']);
 
         $transport = $this->getTransport(
             null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
-            array(
-                'topic' => array('name' => $topic),
-                'queue' => array('name' => $queue),
-            ),
+            [
+                'topic' => ['name' => $topic],
+                'queue' => ['name' => $queue],
+            ],
             false
         );
 
@@ -245,8 +246,53 @@ class QueueInteropTransportTest extends TestCase
         $this->assertNull($handlerArgument);
     }
 
-    private function getTransport(DecoderInterface $decoder = null, EncoderInterface $encoder = null, ContextManager $contextManager = null, array $options = array(), $debug = false)
+    public function testRepeatMessage()
     {
+        $psrMessage = $this->createMock(PsrMessage::class);
+
+        $psrConsumer = $this->createMock(PsrConsumer::class);
+        $psrConsumer->expects($this->exactly(2))
+            ->method('receive')
+            ->with(0)
+            ->willReturn($psrMessage);
+        $psrConsumer->expects($this->once())
+            ->method('reject')
+            ->with($psrMessage);
+
+        $psrQueue = $this->createMock(PsrQueue::class);
+
+        $psrContext = $this->createMock(PsrContext::class);
+        $psrContext->expects($this->once())
+            ->method('createQueue')
+            ->with('messages')
+            ->willReturn($psrQueue);
+        $psrContext->expects($this->once())
+            ->method('createConsumer')
+            ->with($psrQueue)
+            ->willReturn($psrConsumer);
+
+        $contextManager = $this->createMock(ContextManager::class);
+        $contextManager->expects($this->once())
+            ->method('psrContext')
+            ->willReturn($psrContext);
+
+        $transport = $this->getTransport(null, null, $contextManager);
+        $transport->receive(
+            function ($argument) {
+                if (null !== $argument) {
+                    throw new RepeatMessageException();
+                }
+            }
+        );
+    }
+
+    private function getTransport(
+        DecoderInterface $decoder = null,
+        EncoderInterface $encoder = null,
+        ContextManager $contextManager = null,
+        array $options = [],
+        $debug = false
+    ) {
         return new QueueInteropTransport(
             $decoder ?: $this->prophesize(DecoderInterface::class)->reveal(),
             $encoder ?: $this->prophesize(EncoderInterface::class)->reveal(),
