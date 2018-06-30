@@ -11,20 +11,20 @@
 
 namespace Enqueue\MessengerAdapter\Tests\EnvelopeItem;
 
-use Enqueue\MessengerAdapter\EnvelopeItem\AttemptsMessage;
+use Enqueue\MessengerAdapter\EnvelopeItem\RepeatMessage;
 use PHPUnit\Framework\TestCase;
 
-class AttemptsMessageTest extends TestCase
+class RepeatMessageTest extends TestCase
 {
     public function testSerialization()
     {
-        $message = new AttemptsMessage(1, 3);
-        $this->assertEquals(new AttemptsMessage(1, 3, 1), unserialize(serialize($message)));
+        $message = new RepeatMessage(1, 3);
+        $this->assertEquals(new RepeatMessage(1, 3, 1), unserialize(serialize($message)));
     }
 
     public function testNowDelayToMs()
     {
-        $message = new AttemptsMessage(2, 3, 2);
+        $message = new RepeatMessage(2, 3, 2);
         $this->assertEquals(6000, $message->getNowDelayToMs());
     }
 
@@ -43,10 +43,10 @@ class AttemptsMessageTest extends TestCase
      */
     public function testIsRepeatable()
     {
-        $message = new AttemptsMessage(1, 3, 2);
+        $message = new RepeatMessage(1, 3, 2);
         $this->assertTrue($message->isRepeatable());
 
-        $message = new AttemptsMessage(1, 3, 3);
+        $message = new RepeatMessage(1, 3, 3);
         $this->assertFalse($message->isRepeatable());
     }
 }

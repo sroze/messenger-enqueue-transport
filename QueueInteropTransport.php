@@ -14,7 +14,7 @@ namespace Enqueue\MessengerAdapter;
 use Enqueue\AmqpTools\DelayStrategy;
 use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
-use Enqueue\MessengerAdapter\EnvelopeItem\AttemptsMessage;
+use Enqueue\MessengerAdapter\EnvelopeItem\RepeatMessage;
 use Enqueue\MessengerAdapter\Exception\RejectMessageException;
 use Enqueue\MessengerAdapter\Exception\RepeatMessageException;
 use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
@@ -97,12 +97,12 @@ class QueueInteropTransport implements TransportInterface
             } catch (RepeatMessageException $e) {
                 $consumer->reject($message);
 
-                $attempts = $envelope->get(AttemptsMessage::class);
-                if (null === $attempts) {
-                    $attempts = new AttemptsMessage($e->getTimeToDelay(), $e->getMaxAttempts());
+                $repeat = $envelope->get(RepeatMessage::class);
+                if (null === $repeat) {
+                    $repeat = new RepeatMessage($e->getTimeToDelay(), $e->getMaxAttempts());
                 }
-                if ($attempts->isRepeatable()) {
-                    $this->send($envelope->with($attempts));
+                if ($repeat->isRepeatable()) {
+                    $this->send($envelope->with($repeat));
                 }
             } catch (RejectMessageException $e) {
                 $consumer->reject($message);
@@ -150,10 +150,10 @@ class QueueInteropTransport implements TransportInterface
             $producer->setTimeToLive($this->options['timeToLive']);
         }
 
-        /** @var AttemptsMessage $attempts */
-        $attempts = $message->get(AttemptsMessage::class);
-        if (null !== $attempts) {
-            $producer->setDeliveryDelay($attempts->getNowDelayToMs());
+        /** @var RepeatMessage $repeat */
+        $repeat = $message->get(RepeatMessage::class);
+        if (null !== $repeat) {
+            $producer->setDeliveryDelay($repeat->getNowDelayToMs());
         }
 
         try {

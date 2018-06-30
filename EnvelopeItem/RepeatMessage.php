@@ -13,7 +13,7 @@ namespace Enqueue\MessengerAdapter\EnvelopeItem;
 
 use Symfony\Component\Messenger\EnvelopeItemInterface;
 
-final class AttemptsMessage implements EnvelopeItemInterface
+final class RepeatMessage implements EnvelopeItemInterface
 {
     /** @var int delay time to sec */
     private $timeToDelay;
