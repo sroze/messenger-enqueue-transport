@@ -153,6 +153,9 @@ class QueueInteropTransport implements TransportInterface
         /** @var RepeatMessage $repeat */
         $repeat = $message->get(RepeatMessage::class);
         if (null !== $repeat) {
+            if ($producer instanceof DelayStrategyAware) {
+                $producer->setDelayStrategy($this->options['delayStrategy']);
+            }
             $producer->setDeliveryDelay($repeat->getNowDelayToMs());
         }
 
