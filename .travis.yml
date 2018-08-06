@@ -9,6 +9,7 @@ cache:
 matrix:
   include:
     - php: '7.1'
+    - php: '7.2'
 
 before_install:
   - phpenv config-rm xdebug.ini || echo "xdebug not available"
