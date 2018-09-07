@@ -20,6 +20,8 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Interop\Queue\Exception as InteropQueueException;
+use Interop\Queue\Message;
+use Enqueue\MessengerAdapter\Exception\MissingMessageMetadataSetterException;
 use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Symfony\Component\OptionsResolver\Options;
@@ -115,11 +117,14 @@ class QueueInteropTransport implements TransportInterface
 
         $encodedMessage = $this->serializer->encode($message);
 
+        $originalMessage = $message;
         $message = $context->createMessage(
             $encodedMessage['body'],
             $encodedMessage['properties'] ?? array(),
             $encodedMessage['headers'] ?? array()
         );
+
+        $this->setMessageMetadata($message, $originalMessage);
 
         $producer = $context->createProducer();
 
@@ -195,7 +200,29 @@ class QueueInteropTransport implements TransportInterface
 
         return array(
             'topic' => $topic ?? $this->options['topic']['name'],
+            'topicOptions' => $this->options['topic'],
             'queue' => $this->options['queue']['name'],
+            'queueOptions' => $this->options['queue'],
         );
+    }
+
+    private function setMessageMetadata(Message $message, Envelope $originalMessage): void
+    {
+        $configuration = $originalMessage->get(TransportConfiguration::class);
+
+        if (null === $configuration) {
+            return;
+        }
+
+        $metadata = $configuration->getMetadata();
+        $class = new \ReflectionClass($message);
+
+        foreach ($metadata as $key => $value) {
+            $setter = sprintf('set%s', ucfirst($key));
+            if (!$class->hasMethod($setter)) {
+                throw new MissingMessageMetadataSetterException($key, $setter, $class->getName());
+            }
+            $message->{$setter}($value);
+        }
     }
 }
