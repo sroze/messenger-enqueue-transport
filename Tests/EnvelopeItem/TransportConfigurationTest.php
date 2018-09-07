@@ -22,9 +22,25 @@ class TransportConfigurationTest extends TestCase
         $this->assertSame('foo', $transportConfiguration->getTopic());
     }
 
+    public function testMetadataConfiguration()
+    {
+        $transportConfiguration = new TransportConfiguration(array('metadata' => array('foo' => 'bar')));
+        $this->assertEquals(array('foo' => 'bar'), $transportConfiguration->getMetadata());
+    }
+
+    public function testDefaultConfiguration()
+    {
+        $transportConfiguration = new TransportConfiguration(array());
+        $this->assertNull($transportConfiguration->getTopic());
+        $this->assertEquals(array(), $transportConfiguration->getMetadata());
+    }
+
     public function testSerialization()
     {
-        $transportConfiguration = new TransportConfiguration(array('topic' => 'foo'));
+        $transportConfiguration = new TransportConfiguration(array(
+            'topic' => 'foo',
+            'metadata' => array('foo' => 'bar'),
+        ));
         $this->assertEquals($transportConfiguration, unserialize(serialize($transportConfiguration)));
     }
 }

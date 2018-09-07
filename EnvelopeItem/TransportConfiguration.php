@@ -33,6 +33,7 @@ final class TransportConfiguration implements StampInterface, \Serializable
     public function __construct(array $configuration)
     {
         $this->topic = $configuration['topic'] ?? null;
+        $this->metadata = $configuration['metadata'] ?? array();
     }
 
     /**
@@ -46,12 +47,23 @@ final class TransportConfiguration implements StampInterface, \Serializable
     }
 
     /**
+     * Get routing key.
+     *
+     * @return string $metadata
+     */
+    public function getMetadata()
+    {
+        return $this->metadata;
+    }
+
+    /**
      * Serialize object.
      */
     public function serialize()
     {
         return serialize(array(
             'topic' => $this->topic,
+            'metadata' => $this->metadata,
         ));
     }
 
@@ -62,8 +74,14 @@ final class TransportConfiguration implements StampInterface, \Serializable
      */
     public function unserialize($serialized)
     {
-        list('topic' => $topic) = unserialize($serialized, array('allowed_classes' => false));
+        list(
+            'topic' => $topic,
+            'metadata' => $metadata
+        ) = unserialize($serialized, array('allowed_classes' => false));
 
-        $this->__construct(array('topic' => $topic));
+        $this->__construct(array(
+            'topic' => $topic,
+            'metadata' => $metadata,
+        ));
     }
 }
