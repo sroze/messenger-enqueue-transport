@@ -11,14 +11,13 @@
 
 namespace Enqueue\MessengerAdapter;
 
-use Interop\Queue\PsrContext;
+use Interop\Queue\Context;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Symfony\Component\Messenger\Transport\ReceiverInterface;
 use Symfony\Component\Messenger\Transport\SenderInterface;
-use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
-use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
 /**
  * Symfony Messenger transport factory.
@@ -32,7 +31,7 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
     private $debug;
     private $container;
 
-    public function __construct(DecoderInterface $decoder, EncoderInterface $encoder, ContainerInterface $container, bool $debug = false)
+    public function __construct(SerializerInterface $decoder, SerializerInterface $encoder, ContainerInterface $container, bool $debug = false)
     {
         $this->encoder = $encoder;
         $this->decoder = $decoder;
@@ -92,13 +91,13 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
             ));
         }
 
-        $psrContext = $this->container->get($contextService);
-        if (!$psrContext instanceof PsrContext) {
-            throw new \RuntimeException(sprintf('Service "%s" not instanceof PsrContext', $contextService));
+        $context = $this->container->get($contextService);
+        if (!$context instanceof Context) {
+            throw new \RuntimeException(sprintf('Service "%s" not instanceof context', $contextService));
         }
 
         return array(
-            new AmqpContextManager($psrContext),
+            new AmqpContextManager($context),
             $amqpOptions,
         );
     }

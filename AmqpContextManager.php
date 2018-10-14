@@ -15,23 +15,23 @@ use Interop\Amqp\AmqpContext;
 use Interop\Amqp\AmqpQueue;
 use Interop\Amqp\AmqpTopic;
 use Interop\Amqp\Impl\AmqpBind;
-use Interop\Queue\PsrContext;
+use Interop\Queue\Context;
 
 class AmqpContextManager implements ContextManager
 {
-    private $psrContext;
+    private $context;
 
-    public function __construct(PsrContext $psrContext)
+    public function __construct(Context $context)
     {
-        $this->psrContext = $psrContext;
+        $this->context = $context;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function psrContext(): PsrContext
+    public function context(): Context
     {
-        return $this->psrContext;
+        return $this->context;
     }
 
     /**
@@ -53,20 +53,20 @@ class AmqpContextManager implements ContextManager
      */
     public function ensureExists(array $destination): bool
     {
-        if (!$this->psrContext instanceof AmqpContext) {
+        if (!$this->context instanceof AmqpContext) {
             return false;
         }
 
-        $topic = $this->psrContext->createTopic($destination['topic']);
+        $topic = $this->context->createTopic($destination['topic']);
         $topic->setType(AmqpTopic::TYPE_FANOUT);
         $topic->addFlag(AmqpTopic::FLAG_DURABLE);
-        $this->psrContext->declareTopic($topic);
+        $this->context->declareTopic($topic);
 
-        $queue = $this->psrContext->createQueue($destination['queue']);
+        $queue = $this->context->createQueue($destination['queue']);
         $queue->addFlag(AmqpQueue::FLAG_DURABLE);
-        $this->psrContext->declareQueue($queue);
+        $this->context->declareQueue($queue);
 
-        $this->psrContext->bind(new AmqpBind($queue, $topic));
+        $this->context->bind(new AmqpBind($queue, $topic));
 
         return true;
     }

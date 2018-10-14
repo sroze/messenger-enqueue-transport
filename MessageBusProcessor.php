@@ -11,12 +11,12 @@
 
 namespace Enqueue\MessengerAdapter;
 
-use Interop\Queue\PsrContext;
-use Interop\Queue\PsrMessage;
-use Interop\Queue\PsrProcessor;
+use Interop\Queue\Context;
+use Interop\Queue\Message;
+use Interop\Queue\Processor;
 use Symfony\Component\Messenger\Asynchronous\Transport\ReceivedMessage;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Enqueue\MessengerAdapter\Exception\RejectMessageException;
 use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
 
@@ -26,18 +26,18 @@ use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
  * @author Max Kotliar <kotlyar.maksim@gmail.com>
  * @author Samuel Roze <samuel.roze@gmail.com>
  */
-class MessageBusProcessor implements PsrProcessor
+class MessageBusProcessor implements Processor
 {
     private $bus;
     private $messageDecoder;
 
-    public function __construct(MessageBusInterface $bus, DecoderInterface $messageDecoder)
+    public function __construct(MessageBusInterface $bus, SerializerInterface $messageDecoder)
     {
         $this->bus = $bus;
         $this->messageDecoder = $messageDecoder;
     }
 
-    public function process(PsrMessage $message, PsrContext $context)
+    public function process(Message $message, Context $context)
     {
         $busMessage = $this->messageDecoder->decode(array(
             'body' => $message->getBody(),
@@ -52,13 +52,13 @@ class MessageBusProcessor implements PsrProcessor
         try {
             $this->bus->dispatch($busMessage);
 
-            return self::ACK;
+            return Processor::ACK;
         } catch (RejectMessageException $e) {
-            return self::REJECT;
+            return Processor::REJECT;
         } catch (RequeueMessageException $e) {
-            return self::REQUEUE;
+            return Processor::REQUEUE;
         } catch (\Throwable $e) {
-            return self::REJECT;
+            return Processor::REJECT;
         }
     }
 }

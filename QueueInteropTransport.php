@@ -17,8 +17,7 @@ use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
 use Enqueue\MessengerAdapter\Exception\RejectMessageException;
 use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
-use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Interop\Queue\Exception as InteropQueueException;
 use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
@@ -41,7 +40,7 @@ class QueueInteropTransport implements TransportInterface
     private $debug;
     private $shouldStop;
 
-    public function __construct(DecoderInterface $decoder, EncoderInterface $encoder, ContextManager $contextManager, array $options = array(), $debug = false)
+    public function __construct(SerializerInterface $decoder, SerializerInterface $encoder, ContextManager $contextManager, array $options = array(), $debug = false)
     {
         $this->decoder = $decoder;
         $this->encoder = $encoder;
@@ -58,10 +57,10 @@ class QueueInteropTransport implements TransportInterface
      */
     public function receive(callable $handler): void
     {
-        $psrContext = $this->contextManager->psrContext();
+        $context = $this->contextManager->context();
         $destination = $this->getDestination(null);
-        $queue = $psrContext->createQueue($destination['queue']);
-        $consumer = $psrContext->createConsumer($queue);
+        $queue = $context->createQueue($destination['queue']);
+        $consumer = $context->createConsumer($queue);
 
         if ($this->debug) {
             $this->contextManager->ensureExists($destination);
@@ -104,9 +103,9 @@ class QueueInteropTransport implements TransportInterface
      */
     public function send(Envelope $message): void
     {
-        $psrContext = $this->contextManager->psrContext();
+        $context = $this->contextManager->context();
         $destination = $this->getDestination($message);
-        $topic = $psrContext->createTopic($destination['topic']);
+        $topic = $context->createTopic($destination['topic']);
 
         if ($this->debug) {
             $this->contextManager->ensureExists($destination);
@@ -114,13 +113,13 @@ class QueueInteropTransport implements TransportInterface
 
         $encodedMessage = $this->encoder->encode($message);
 
-        $psrMessage = $psrContext->createMessage(
+        $psrMessage = $context->createMessage(
             $encodedMessage['body'],
             $encodedMessage['properties'] ?? array(),
             $encodedMessage['headers'] ?? array()
         );
 
-        $producer = $psrContext->createProducer();
+        $producer = $context->createProducer();
 
         if (isset($this->options['deliveryDelay'])) {
             if ($producer instanceof DelayStrategyAware) {
