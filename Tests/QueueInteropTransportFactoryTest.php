@@ -17,8 +17,7 @@ use Enqueue\MessengerAdapter\QueueInteropTransportFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Enqueue\MessengerAdapter\AmqpContextManager;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
-use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Interop\Queue\PsrContext;
 
 class QueueInteropTransportFactoryTest extends TestCase
@@ -34,17 +33,16 @@ class QueueInteropTransportFactoryTest extends TestCase
     public function testCreatesTransport()
     {
         $queuePsrContext = $this->prophesize(PsrContext::class)->reveal();
-        $decoder = $this->prophesize(DecoderInterface::class);
-        $encoder = $this->prophesize(EncoderInterface::class);
+        $serializer = $this->prophesize(SerializerInterface::class);
 
         $container = $this->prophesize(ContainerInterface::class);
         $container->has('enqueue.transport.default.context')->willReturn(true);
         $container->get('enqueue.transport.default.context')->willReturn($queuePsrContext);
 
-        $factory = $this->getFactory($decoder->reveal(), $encoder->reveal(), $container->reveal());
+        $factory = $this->getFactory($serializer->reveal(), $container->reveal());
         $dsn = 'enqueue://default';
 
-        $expectedTransport = new QueueInteropTransport($decoder->reveal(), $encoder->reveal(), new AmqpContextManager($queuePsrContext), array(), true);
+        $expectedTransport = new QueueInteropTransport($serializer->reveal(), new AmqpContextManager($queuePsrContext), array(), true);
         $this->assertEquals($expectedTransport, $factory->createTransport($dsn, array()));
 
         // Ensure BC for Symfony beta 4.1
@@ -55,19 +53,17 @@ class QueueInteropTransportFactoryTest extends TestCase
     public function testDnsParsing()
     {
         $queuePsrContext = $this->prophesize(PsrContext::class)->reveal();
-        $decoder = $this->prophesize(DecoderInterface::class);
-        $encoder = $this->prophesize(EncoderInterface::class);
+        $serializer = $this->prophesize(SerializerInterface::class);
 
         $container = $this->prophesize(ContainerInterface::class);
         $container->has('enqueue.transport.default.context')->willReturn(true);
         $container->get('enqueue.transport.default.context')->willReturn($queuePsrContext);
 
-        $factory = $this->getFactory($decoder->reveal(), $encoder->reveal(), $container->reveal());
+        $factory = $this->getFactory($serializer->reveal(), $container->reveal());
         $dsn = 'enqueue://default?queue[name]=test&topic[name]=test&deliveryDelay=100&delayStrategy=Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy&timeToLive=100&receiveTimeout=100&priority=100';
 
         $expectedTransport = new QueueInteropTransport(
-            $decoder->reveal(),
-            $encoder->reveal(),
+            $serializer->reveal(),
             new AmqpContextManager($queuePsrContext),
             array(
                 'topic' => array('name' => 'test'),
@@ -101,11 +97,10 @@ class QueueInteropTransportFactoryTest extends TestCase
         $factory->createTransport('enqueue://foo', array());
     }
 
-    private function getFactory(DecoderInterface $decoder = null, EncoderInterface $encoder = null, ContainerInterface $container = null, $debug = true)
+    private function getFactory(SerializerInterface $serializer = null, ContainerInterface $container = null, $debug = true)
     {
         return new QueueInteropTransportFactory(
-            $decoder ?: $this->prophesize(DecoderInterface::class)->reveal(),
-            $encoder ?: $this->prophesize(EncoderInterface::class)->reveal(),
+            $serializer ?: $this->prophesize(SerializerInterface::class)->reveal(),
             $container ?: $this->prophesize(ContainerInterface::class)->reveal(),
             $debug
         );

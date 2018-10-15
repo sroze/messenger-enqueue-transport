@@ -17,8 +17,7 @@ use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
 use Enqueue\MessengerAdapter\Exception\RejectMessageException;
 use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
-use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Interop\Queue\Exception as InteropQueueException;
 use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
@@ -34,17 +33,15 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class QueueInteropTransport implements TransportInterface
 {
-    private $decoder;
-    private $encoder;
+    private $serializer;
     private $contextManager;
     private $options;
     private $debug;
     private $shouldStop;
 
-    public function __construct(DecoderInterface $decoder, EncoderInterface $encoder, ContextManager $contextManager, array $options = array(), $debug = false)
+    public function __construct(SerializerInterface $serializer, ContextManager $contextManager, array $options = array(), $debug = false)
     {
-        $this->decoder = $decoder;
-        $this->encoder = $encoder;
+        $this->serializer = $serializer;
         $this->contextManager = $contextManager;
         $this->debug = $debug;
 
@@ -112,7 +109,7 @@ class QueueInteropTransport implements TransportInterface
             $this->contextManager->ensureExists($destination);
         }
 
-        $encodedMessage = $this->encoder->encode($message);
+        $encodedMessage = $this->serializer->encode($message);
 
         $psrMessage = $psrContext->createMessage(
             $encodedMessage['body'],
