@@ -16,7 +16,7 @@ use Interop\Queue\PsrMessage;
 use Interop\Queue\PsrProcessor;
 use Symfony\Component\Messenger\Asynchronous\Transport\ReceivedMessage;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Enqueue\MessengerAdapter\Exception\RejectMessageException;
 use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
 
@@ -31,7 +31,7 @@ class MessageBusProcessor implements PsrProcessor
     private $bus;
     private $messageDecoder;
 
-    public function __construct(MessageBusInterface $bus, DecoderInterface $messageDecoder)
+    public function __construct(MessageBusInterface $bus, SerializerInterface $messageDecoder)
     {
         $this->bus = $bus;
         $this->messageDecoder = $messageDecoder;

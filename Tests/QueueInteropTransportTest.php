@@ -23,11 +23,10 @@ use Interop\Queue\PsrDestination;
 use Interop\Queue\PsrMessage;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\SenderInterface;
-use Symfony\Component\Messenger\Transport\Serialization\EncoderInterface;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Enqueue\MessengerAdapter\ContextManager;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Interop\Queue\Exception;
-use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
 
 class QueueInteropTransportTest extends TestCase
 {
@@ -67,11 +66,10 @@ class QueueInteropTransportTest extends TestCase
         $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
         $contextManagerProphecy->ensureExists(array('topic' => $topic, 'queue' => $queue))->shouldBeCalled();
 
-        $encoderProphecy = $this->prophesize(EncoderInterface::class);
+        $encoderProphecy = $this->prophesize(SerializerInterface::class);
         $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
 
         $transport = $this->getTransport(
-            null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
             array(
@@ -113,11 +111,10 @@ class QueueInteropTransportTest extends TestCase
         $contextManagerProphecy = $this->prophesize(ContextManager::class);
         $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
 
-        $encoderProphecy = $this->prophesize(EncoderInterface::class);
+        $encoderProphecy = $this->prophesize(SerializerInterface::class);
         $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
 
         $transport = $this->getTransport(
-            null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
             array(
@@ -156,11 +153,10 @@ class QueueInteropTransportTest extends TestCase
         $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
         $contextManagerProphecy->ensureExists(array('topic' => $specificTopic, 'queue' => $queue))->shouldBeCalled();
 
-        $encoderProphecy = $this->prophesize(EncoderInterface::class);
+        $encoderProphecy = $this->prophesize(SerializerInterface::class);
         $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
 
         $transport = $this->getTransport(
-            null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
             array(
@@ -203,11 +199,10 @@ class QueueInteropTransportTest extends TestCase
         $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
         $contextManagerProphecy->recoverException($exception, array('topic' => $topic, 'queue' => $queue))->shouldBeCalled()->willReturn(false);
 
-        $encoderProphecy = $this->prophesize(EncoderInterface::class);
+        $encoderProphecy = $this->prophesize(SerializerInterface::class);
         $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
 
         $transport = $this->getTransport(
-            null,
             $encoderProphecy->reveal(),
             $contextManagerProphecy->reveal(),
             array(
@@ -235,7 +230,7 @@ class QueueInteropTransportTest extends TestCase
         $contextManagerProphecy = $this->prophesize(ContextManager::class);
         $contextManagerProphecy->psrContext()->shouldBeCalled()->willReturn($psrContextProphecy->reveal());
 
-        $transport = $this->getTransport(null, null, $contextManagerProphecy->reveal());
+        $transport = $this->getTransport(null, $contextManagerProphecy->reveal());
         $handlerArgument = 'not-null';
         $handler = function ($argument) use (&$handlerArgument, $transport) {
             $handlerArgument = $argument;
@@ -245,11 +240,10 @@ class QueueInteropTransportTest extends TestCase
         $this->assertNull($handlerArgument);
     }
 
-    private function getTransport(DecoderInterface $decoder = null, EncoderInterface $encoder = null, ContextManager $contextManager = null, array $options = array(), $debug = false)
+    private function getTransport(SerializerInterface $serializer = null, ContextManager $contextManager = null, array $options = array(), $debug = false)
     {
         return new QueueInteropTransport(
-            $decoder ?: $this->prophesize(DecoderInterface::class)->reveal(),
-            $encoder ?: $this->prophesize(EncoderInterface::class)->reveal(),
+            $serializer ?: $this->prophesize(SerializerInterface::class)->reveal(),
             $contextManager ?: $this->prophesize(ContextManager::class)->reveal(),
             $options,
             $debug

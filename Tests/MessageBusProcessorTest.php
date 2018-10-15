@@ -13,7 +13,7 @@ namespace Enqueue\MessengerAdapter\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Transport\Serialization\DecoderInterface;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Asynchronous\Transport\ReceivedMessage;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Interop\Queue\PsrMessage;
@@ -44,7 +44,7 @@ class MessageBusProcessorTest extends TestCase
         $contextProphecy = $this->prophesize(PsrContext::class);
         $busProphecy = $this->prophesize(MessageBusInterface::class);
         $busProphecy->dispatch($receivedMessage)->shouldBeCalled();
-        $decoderProphecy = $this->prophesize(DecoderInterface::class);
+        $decoderProphecy = $this->prophesize(SerializerInterface::class);
         $decoderProphecy->decode(array(
             'body' => 'body',
             'headers' => array('header'),
@@ -60,7 +60,7 @@ class MessageBusProcessorTest extends TestCase
         $receivedMessage = new ReceivedMessage('test');
         $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(PsrContext::class);
-        $decoderProphecy = $this->prophesize(DecoderInterface::class);
+        $decoderProphecy = $this->prophesize(SerializerInterface::class);
         $decoderProphecy->decode(Argument::any())->shouldBeCalled()->willReturn($envelope);
         $busProphecy = $this->prophesize(MessageBusInterface::class);
         $busProphecy->dispatch($receivedMessage)->shouldBeCalled()->willThrow(new RejectMessageException());
@@ -74,7 +74,7 @@ class MessageBusProcessorTest extends TestCase
         $receivedMessage = new ReceivedMessage('test');
         $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(PsrContext::class);
-        $decoderProphecy = $this->prophesize(DecoderInterface::class);
+        $decoderProphecy = $this->prophesize(SerializerInterface::class);
         $decoderProphecy->decode(Argument::any())->shouldBeCalled()->willReturn($envelope);
         $busProphecy = $this->prophesize(MessageBusInterface::class);
         $busProphecy->dispatch($receivedMessage)->shouldBeCalled()->willThrow(new RequeueMessageException());
@@ -88,7 +88,7 @@ class MessageBusProcessorTest extends TestCase
         $receivedMessage = new ReceivedMessage('test');
         $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(PsrContext::class);
-        $decoderProphecy = $this->prophesize(DecoderInterface::class);
+        $decoderProphecy = $this->prophesize(SerializerInterface::class);
         $decoderProphecy->decode(Argument::any())->shouldBeCalled()->willReturn($envelope);
         $busProphecy = $this->prophesize(MessageBusInterface::class);
         $busProphecy->dispatch($receivedMessage)->shouldBeCalled()->willThrow(new \InvalidArgumentException());
