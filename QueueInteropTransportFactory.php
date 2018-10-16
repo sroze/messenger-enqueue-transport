@@ -11,7 +11,7 @@
 
 namespace Enqueue\MessengerAdapter;
 
-use Interop\Queue\PsrContext;
+use Interop\Queue\Context;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
@@ -88,13 +88,13 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
             ));
         }
 
-        $psrContext = $this->container->get($contextService);
-        if (!$psrContext instanceof PsrContext) {
-            throw new \RuntimeException(sprintf('Service "%s" not instanceof PsrContext', $contextService));
+        $context = $this->container->get($contextService);
+        if (!$context instanceof Context) {
+            throw new \RuntimeException(sprintf('Service "%s" not instanceof context', $contextService));
         }
 
         return array(
-            new AmqpContextManager($psrContext),
+            new AmqpContextManager($context),
             $amqpOptions,
         );
     }

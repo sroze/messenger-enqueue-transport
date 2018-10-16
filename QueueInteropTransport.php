@@ -55,10 +55,10 @@ class QueueInteropTransport implements TransportInterface
      */
     public function receive(callable $handler): void
     {
-        $psrContext = $this->contextManager->psrContext();
+        $context = $this->contextManager->context();
         $destination = $this->getDestination(null);
-        $queue = $psrContext->createQueue($destination['queue']);
-        $consumer = $psrContext->createConsumer($queue);
+        $queue = $context->createQueue($destination['queue']);
+        $consumer = $context->createConsumer($queue);
 
         if ($this->debug) {
             $this->contextManager->ensureExists($destination);
@@ -79,7 +79,7 @@ class QueueInteropTransport implements TransportInterface
             }
 
             try {
-                $handler($this->decoder->decode(array(
+                $handler($this->serializer->decode(array(
                     'body' => $message->getBody(),
                     'headers' => $message->getHeaders(),
                     'properties' => $message->getProperties(),
@@ -101,9 +101,9 @@ class QueueInteropTransport implements TransportInterface
      */
     public function send(Envelope $message): void
     {
-        $psrContext = $this->contextManager->psrContext();
+        $context = $this->contextManager->context();
         $destination = $this->getDestination($message);
-        $topic = $psrContext->createTopic($destination['topic']);
+        $topic = $context->createTopic($destination['topic']);
 
         if ($this->debug) {
             $this->contextManager->ensureExists($destination);
@@ -111,13 +111,13 @@ class QueueInteropTransport implements TransportInterface
 
         $encodedMessage = $this->serializer->encode($message);
 
-        $psrMessage = $psrContext->createMessage(
+        $message = $context->createMessage(
             $encodedMessage['body'],
             $encodedMessage['properties'] ?? array(),
             $encodedMessage['headers'] ?? array()
         );
 
-        $producer = $psrContext->createProducer();
+        $producer = $context->createProducer();
 
         if (isset($this->options['deliveryDelay'])) {
             if ($producer instanceof DelayStrategyAware) {
@@ -133,7 +133,7 @@ class QueueInteropTransport implements TransportInterface
         }
 
         try {
-            $producer->send($topic, $psrMessage);
+            $producer->send($topic, $message);
         } catch (InteropQueueException $e) {
             if ($this->contextManager->recoverException($e, $destination)) {
                 // The context manager recovered the exception, we re-try.

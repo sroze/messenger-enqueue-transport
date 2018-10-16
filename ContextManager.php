@@ -11,10 +11,10 @@
 
 namespace Enqueue\MessengerAdapter;
 
-use Interop\Queue\PsrContext;
+use Interop\Queue\Context;
 
 /**
- * It is reponsible of managing the queue context. It will ensure the queue is successfully created
+ * It is responsible of managing the queue context. It will ensure the queue is successfully created
  * and is ready to work.
  *
  * @author Samuel Roze <samuel.roze@gmail.com>
@@ -22,11 +22,11 @@ use Interop\Queue\PsrContext;
 interface ContextManager
 {
     /**
-     * Returns the associated `PsrContext` object.
+     * Returns the associated `context` object.
      *
-     * @return PsrContext
+     * @return Context
      */
-    public function psrContext(): PsrContext;
+    public function context(): Context;
 
     /**
      * Recover from the given exception. This can typically be something like the queue or topic do not exists.
