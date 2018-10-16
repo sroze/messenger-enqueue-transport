@@ -26,15 +26,13 @@ use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
  */
 class QueueInteropTransportFactory implements TransportFactoryInterface
 {
-    private $decoder;
-    private $encoder;
+    private $serializer;
     private $debug;
     private $container;
 
-    public function __construct(SerializerInterface $decoder, SerializerInterface $encoder, ContainerInterface $container, bool $debug = false)
+    public function __construct(SerializerInterface $serializer, ContainerInterface $container, bool $debug = false)
     {
-        $this->encoder = $encoder;
-        $this->decoder = $decoder;
+        $this->serializer = $serializer;
         $this->container = $container;
         $this->debug = $debug;
     }
@@ -56,8 +54,7 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
         [$contextManager, $options] = $this->parseDsn($dsn);
 
         return new QueueInteropTransport(
-            $this->decoder,
-            $this->encoder,
+            $this->serializer,
             $contextManager,
             $options,
             $this->debug

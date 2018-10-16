@@ -44,8 +44,7 @@ class MessageBusProcessorTest extends TestCase
         $contextProphecy = $this->prophesize(Context::class);
         $busProphecy = $this->prophesize(MessageBusInterface::class);
         $busProphecy->dispatch($receivedMessage)->shouldBeCalled();
-        $decoderProphecy = $this->prophesize(SerializerInterface::class)->willImplement(SerializerInterface::class);
-
+        $decoderProphecy = $this->prophesize(SerializerInterface::class);
         $decoderProphecy->decode(array(
             'body' => 'body',
             'headers' => array('header'),

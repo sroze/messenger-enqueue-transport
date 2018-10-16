@@ -14,7 +14,7 @@ namespace Enqueue\MessengerAdapter;
 use Interop\Queue\Context;
 
 /**
- * It is reponsible of managing the queue context. It will ensure the queue is successfully created
+ * It is responsible of managing the queue context. It will ensure the queue is successfully created
  * and is ready to work.
  *
  * @author Samuel Roze <samuel.roze@gmail.com>

@@ -33,17 +33,15 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class QueueInteropTransport implements TransportInterface
 {
-    private $decoder;
-    private $encoder;
+    private $serializer;
     private $contextManager;
     private $options;
     private $debug;
     private $shouldStop;
 
-    public function __construct(SerializerInterface $decoder, SerializerInterface $encoder, ContextManager $contextManager, array $options = array(), $debug = false)
+    public function __construct(SerializerInterface $serializer, ContextManager $contextManager, array $options = array(), $debug = false)
     {
-        $this->decoder = $decoder;
-        $this->encoder = $encoder;
+        $this->serializer = $serializer;
         $this->contextManager = $contextManager;
         $this->debug = $debug;
 
@@ -68,7 +66,7 @@ class QueueInteropTransport implements TransportInterface
 
         while (!$this->shouldStop) {
             try {
-                if (null === ($message = $consumer->receive($this->options['receiveTimeout'] ?? 0))) {
+                if (null === ($message = $consumer->receive($this->options['receiveTimeout'] ?? 30000))) {
                     $handler(null);
                     continue;
                 }
@@ -81,7 +79,7 @@ class QueueInteropTransport implements TransportInterface
             }
 
             try {
-                $handler($this->decoder->decode(array(
+                $handler($this->serializer->decode(array(
                     'body' => $message->getBody(),
                     'headers' => $message->getHeaders(),
                     'properties' => $message->getProperties(),
@@ -111,9 +109,9 @@ class QueueInteropTransport implements TransportInterface
             $this->contextManager->ensureExists($destination);
         }
 
-        $encodedMessage = $this->encoder->encode($message);
+        $encodedMessage = $this->serializer->encode($message);
 
-        $psrMessage = $context->createMessage(
+        $message = $context->createMessage(
             $encodedMessage['body'],
             $encodedMessage['properties'] ?? array(),
             $encodedMessage['headers'] ?? array()
@@ -135,7 +133,7 @@ class QueueInteropTransport implements TransportInterface
         }
 
         try {
-            $producer->send($topic, $psrMessage);
+            $producer->send($topic, $message);
         } catch (InteropQueueException $e) {
             if ($this->contextManager->recoverException($e, $destination)) {
                 // The context manager recovered the exception, we re-try.
