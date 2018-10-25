@@ -1,5 +1,7 @@
 # Enqueue's transport for Symfony Messenger component
 
+### The project needs a maintainer. Please comment on [the issue](https://github.com/php-enqueue/messenger-adapter/issues/30) if you want to maintain this project. 
+
 This Symfony Messenger transport allows you to use Enqueue to send and receive your messages from all the supported brokers.
 
 ## Usage
