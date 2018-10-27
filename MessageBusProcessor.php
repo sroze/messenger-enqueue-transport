@@ -14,7 +14,6 @@ namespace Enqueue\MessengerAdapter;
 use Interop\Queue\Context;
 use Interop\Queue\Message;
 use Interop\Queue\Processor;
-use Symfony\Component\Messenger\Asynchronous\Transport\ReceivedMessage;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Enqueue\MessengerAdapter\Exception\RejectMessageException;
@@ -44,10 +43,6 @@ class MessageBusProcessor implements Processor
             'headers' => $message->getHeaders(),
             'properties' => $message->getProperties(),
         ));
-
-        if (!$busMessage instanceof ReceivedMessage) {
-            $busMessage = new ReceivedMessage($message);
-        }
 
         try {
             $this->bus->dispatch($busMessage);

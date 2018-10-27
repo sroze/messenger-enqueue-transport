@@ -15,8 +15,6 @@ use Interop\Queue\Context;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
-use Symfony\Component\Messenger\Transport\ReceiverInterface;
-use Symfony\Component\Messenger\Transport\SenderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
 /**
@@ -38,13 +36,13 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
     }
 
     // BC layer for Symfony 4.1 beta1
-    public function createReceiver(string $dsn, array $options): ReceiverInterface
+    public function createReceiver(string $dsn, array $options): TransportInterface
     {
         return $this->createTransport($dsn, $options);
     }
 
     // BC layer for Symfony 4.1 beta1
-    public function createSender(string $dsn, array $options): SenderInterface
+    public function createSender(string $dsn, array $options): TransportInterface
     {
         return $this->createTransport($dsn, $options);
     }

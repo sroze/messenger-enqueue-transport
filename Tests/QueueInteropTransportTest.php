@@ -22,11 +22,11 @@ use Interop\Queue\Context;
 use Interop\Queue\Producer;
 use Interop\Queue\Message;
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Transport\SenderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Enqueue\MessengerAdapter\ContextManager;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Interop\Queue\Exception\Exception;
+use Symfony\Component\Messenger\Transport\TransportInterface;
 
 class QueueInteropTransportTest extends TestCase
 {
@@ -34,7 +34,7 @@ class QueueInteropTransportTest extends TestCase
     {
         $transport = $this->getTransport();
 
-        $this->assertInstanceOf(SenderInterface::class, $transport);
+        $this->assertInstanceOf(TransportInterface::class, $transport);
     }
 
     public function testSendAndEnsuresTheInfrastructureExistsWithDebug()
@@ -197,7 +197,8 @@ class QueueInteropTransportTest extends TestCase
 
         $contextManagerProphecy = $this->prophesize(ContextManager::class);
         $contextManagerProphecy->context()->shouldBeCalled()->willReturn($contextProphecy->reveal());
-        $contextManagerProphecy->recoverException($exception, array('topic' => $topic, 'queue' => $queue))->shouldBeCalled()->willReturn(false);
+        $contextManagerProphecy->recoverException($exception,
+            array('topic' => $topic, 'queue' => $queue))->shouldBeCalled()->willReturn(false);
 
         $encoderProphecy = $this->prophesize(SerializerInterface::class);
         $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
@@ -240,8 +241,12 @@ class QueueInteropTransportTest extends TestCase
         $this->assertNull($handlerArgument);
     }
 
-    private function getTransport(SerializerInterface $serializer = null, ContextManager $contextManager = null, array $options = array(), $debug = false)
-    {
+    private function getTransport(
+        SerializerInterface $serializer = null,
+        ContextManager $contextManager = null,
+        array $options = array(),
+        $debug = false
+    ) {
         return new QueueInteropTransport(
             $serializer ?: $this->prophesize(SerializerInterface::class)->reveal(),
             $contextManager ?: $this->prophesize(ContextManager::class)->reveal(),
