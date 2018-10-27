@@ -39,8 +39,12 @@ class QueueInteropTransport implements TransportInterface
     private $debug;
     private $shouldStop;
 
-    public function __construct(SerializerInterface $serializer, ContextManager $contextManager, array $options = array(), $debug = false)
-    {
+    public function __construct(
+        SerializerInterface $serializer,
+        ContextManager $contextManager,
+        array $options = array(),
+        $debug = false
+    ) {
         $this->serializer = $serializer;
         $this->contextManager = $contextManager;
         $this->debug = $debug;
@@ -99,7 +103,7 @@ class QueueInteropTransport implements TransportInterface
     /**
      * {@inheritdoc}
      */
-    public function send(Envelope $message): void
+    public function send(Envelope $message): Envelope
     {
         $context = $this->contextManager->context();
         $destination = $this->getDestination($message);
@@ -138,12 +142,12 @@ class QueueInteropTransport implements TransportInterface
             if ($this->contextManager->recoverException($e, $destination)) {
                 // The context manager recovered the exception, we re-try.
                 $this->send($message);
-
-                return;
             }
 
             throw new SendingMessageFailedException($e->getMessage(), null, $e);
         }
+
+        return new Envelope($message);
     }
 
     /**
@@ -172,7 +176,13 @@ class QueueInteropTransport implements TransportInterface
         $resolver->setAllowedTypes('timeToLive', array('null', 'int'));
         $resolver->setAllowedTypes('delayStrategy', array('null', 'string'));
 
-        $resolver->setAllowedValues('delayStrategy', array(null, RabbitMqDelayPluginDelayStrategy::class, RabbitMqDlxDelayStrategy::class));
+        $resolver->setAllowedValues('delayStrategy', array(
+                null,
+                RabbitMqDelayPluginDelayStrategy::class,
+                RabbitMqDlxDelayStrategy::class,
+            )
+        );
+
         $resolver->setNormalizer('delayStrategy', function (Options $options, $value) {
             return null !== $value ? new $value() : null;
         });

@@ -11,19 +11,24 @@
 
 namespace Enqueue\MessengerAdapter\EnvelopeItem;
 
-use Symfony\Component\Messenger\EnvelopeItemInterface;
+use Symfony\Component\Messenger\Stamp\StampInterface;
 
 /**
  * Message envelope item allowing to specify some transport configuration.
  *
- * @author Thomas Prelot <tprelot@gmail.com>
+ * @author       Thomas Prelot <tprelot@gmail.com>
  *
  * @experimental in 4.1
  */
-final class TransportConfiguration implements EnvelopeItemInterface
+final class TransportConfiguration implements StampInterface, \Serializable
 {
     /**
-     * @param string $topic
+     * @var array
+     */
+    private $topic;
+
+    /**
+     * @param array $configuration
      */
     public function __construct(array $configuration)
     {
@@ -57,9 +62,7 @@ final class TransportConfiguration implements EnvelopeItemInterface
      */
     public function unserialize($serialized)
     {
-        list(
-            'topic' => $topic
-        ) = unserialize($serialized, array('allowed_classes' => false));
+        list('topic' => $topic) = unserialize($serialized, array('allowed_classes' => false));
 
         $this->__construct(array('topic' => $topic));
     }
