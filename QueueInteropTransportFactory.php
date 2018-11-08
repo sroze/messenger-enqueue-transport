@@ -12,10 +12,10 @@
 namespace Enqueue\MessengerAdapter;
 
 use Interop\Queue\Context;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
+use Psr\Container\ContainerInterface;
 
 /**
  * Symfony Messenger transport factory.
