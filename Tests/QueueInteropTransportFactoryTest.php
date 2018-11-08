@@ -14,7 +14,7 @@ namespace Enqueue\MessengerAdapter\Tests;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\MessengerAdapter\QueueInteropTransport;
 use Enqueue\MessengerAdapter\QueueInteropTransportFactory;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Enqueue\MessengerAdapter\AmqpContextManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
