@@ -193,7 +193,7 @@ class QueueInteropTransport implements TransportInterface
 
     private function getDestination(?Envelope $message): array
     {
-        $configuration = $message ? $message->get(TransportConfiguration::class) : null;
+        $configuration = $message ? $message->last(TransportConfiguration::class) : null;
         $topic = null !== $configuration ? $configuration->getTopic() : null;
 
         return array(
@@ -206,7 +206,7 @@ class QueueInteropTransport implements TransportInterface
 
     private function setMessageMetadata(Message $message, Envelope $originalMessage): void
     {
-        $configuration = $originalMessage->get(TransportConfiguration::class);
+        $configuration = $originalMessage->last(TransportConfiguration::class);
 
         if (null === $configuration) {
             return;
