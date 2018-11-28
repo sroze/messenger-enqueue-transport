@@ -8,8 +8,20 @@ cache:
 
 matrix:
   include:
-    - php: '7.1'
-    - php: '7.2'
+    - php: 7.1
+    - php: 7.1
+      env: COMPOSER_FLAGS="--prefer-stable --prefer-lowest"
+    - php: 7.2
+    - php: 7.2
+      env: COMPOSER_MINIMUM_STABILITY=beta
+    - php: 7.2
+      env: COMPOSER_MINIMUM_STABILITY=dev
+    - php: nightly
+  allow_failures:
+    # Allow failures for unstable builds.
+    - php: nightly
+    - env: COMPOSER_MINIMUM_STABILITY=dev
+    - env: COMPOSER_MINIMUM_STABILITY=beta
 
 before_install:
   - phpenv config-rm xdebug.ini || echo "xdebug not available"
@@ -17,7 +29,19 @@ before_install:
   - export PATH="$PATH:$HOME/.composer/vendor/bin"
 
 install:
-  - composer update --no-progress --no-suggest --ansi
+  - |
+    # Handle composer stability to ensure code is validated against all the versions
+    case "$COMPOSER_MINIMUM_STABILITY" in
+      dev|alpha|beta|rc|stable)
+        echo "Update stability requirement during the build to $COMPOSER_MINIMUM_STABILITY."
+        composer config minimum-stability $COMPOSER_MINIMUM_STABILITY
+        ;;
+
+      *)
+        echo "Use the stability defined in composer.json"
+        ;;
+    esac
+  - composer update ${COMPOSER_FLAGS} --no-progress --no-suggest --ansi
 
 script:
   - php-cs-fixer fix --dry-run --diff --no-ansi
