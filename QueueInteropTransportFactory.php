@@ -49,7 +49,9 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
 
     public function createTransport(string $dsn, array $options): TransportInterface
     {
-        [$contextManager, $options] = $this->parseDsn($dsn);
+        [$contextManager, $dsnOptions] = $this->parseDsn($dsn);
+
+        $options = array_merge($dsnOptions, $options);
 
         return new QueueInteropTransport(
             $this->serializer,
