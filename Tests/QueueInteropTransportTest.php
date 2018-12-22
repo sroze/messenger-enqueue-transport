@@ -91,7 +91,7 @@ class QueueInteropTransportTest extends TestCase
             true
         );
 
-        $transport->send($envelope);
+        $this->assertSame($envelope, $transport->send($envelope));
     }
 
     public function testSendWithoutDebugWillNotVerifyTheInfrastructureForPerformanceReasons()
