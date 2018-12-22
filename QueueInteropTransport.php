@@ -72,7 +72,7 @@ class QueueInteropTransport implements TransportInterface
 
         while (!$this->shouldStop) {
             try {
-                if (null === ($message = $consumer->receive($this->options['receiveTimeout'] ?? 30000))) {
+                if (null === ($interopMessage = $consumer->receive($this->options['receiveTimeout'] ?? 30000))) {
                     $handler(null);
                     continue;
                 }
@@ -86,16 +86,16 @@ class QueueInteropTransport implements TransportInterface
 
             try {
                 $handler($this->serializer->decode(array(
-                    'body' => $message->getBody(),
-                    'headers' => $message->getHeaders(),
-                    'properties' => $message->getProperties(),
+                    'body' => $interopMessage->getBody(),
+                    'headers' => $interopMessage->getHeaders(),
+                    'properties' => $interopMessage->getProperties(),
                 )));
 
-                $consumer->acknowledge($message);
+                $consumer->acknowledge($interopMessage);
             } catch (RejectMessageException $e) {
-                $consumer->reject($message);
+                $consumer->reject($interopMessage);
             } catch (RequeueMessageException $e) {
-                $consumer->reject($message, true);
+                $consumer->reject($interopMessage, true);
             }
         }
     }
@@ -103,26 +103,25 @@ class QueueInteropTransport implements TransportInterface
     /**
      * {@inheritdoc}
      */
-    public function send(Envelope $message): Envelope
+    public function send(Envelope $envelope): Envelope
     {
         $context = $this->contextManager->context();
-        $destination = $this->getDestination($message);
+        $destination = $this->getDestination($envelope);
         $topic = $context->createTopic($destination['topic']);
 
         if ($this->debug) {
             $this->contextManager->ensureExists($destination);
         }
 
-        $encodedMessage = $this->serializer->encode($message);
+        $encodedMessage = $this->serializer->encode($envelope);
 
-        $originalMessage = $message;
-        $message = $context->createMessage(
+        $interopMessage = $context->createMessage(
             $encodedMessage['body'],
             $encodedMessage['properties'] ?? array(),
             $encodedMessage['headers'] ?? array()
         );
 
-        $this->setMessageMetadata($message, $originalMessage);
+        $this->setMessageMetadata($interopMessage, $envelope);
 
         $producer = $context->createProducer();
 
@@ -140,17 +139,17 @@ class QueueInteropTransport implements TransportInterface
         }
 
         try {
-            $producer->send($topic, $message);
+            $producer->send($topic, $interopMessage);
         } catch (InteropQueueException $e) {
             if ($this->contextManager->recoverException($e, $destination)) {
                 // The context manager recovered the exception, we re-try.
-                $this->send($message);
+                $envelope = $this->send($envelope);
             }
 
             throw new SendingMessageFailedException($e->getMessage(), null, $e);
         }
 
-        return new Envelope($message);
+        return $envelope;
     }
 
     /**
@@ -191,9 +190,9 @@ class QueueInteropTransport implements TransportInterface
         });
     }
 
-    private function getDestination(?Envelope $message): array
+    private function getDestination(?Envelope $envelope): array
     {
-        $configuration = $message ? $message->last(TransportConfiguration::class) : null;
+        $configuration = $envelope ? $envelope->last(TransportConfiguration::class) : null;
         $topic = null !== $configuration ? $configuration->getTopic() : null;
 
         return array(
@@ -204,23 +203,23 @@ class QueueInteropTransport implements TransportInterface
         );
     }
 
-    private function setMessageMetadata(Message $message, Envelope $originalMessage): void
+    private function setMessageMetadata(Message $interopMessage, Envelope $envelope): void
     {
-        $configuration = $originalMessage->last(TransportConfiguration::class);
+        $configuration = $envelope->last(TransportConfiguration::class);
 
         if (null === $configuration) {
             return;
         }
 
         $metadata = $configuration->getMetadata();
-        $class = new \ReflectionClass($message);
+        $class = new \ReflectionClass($interopMessage);
 
         foreach ($metadata as $key => $value) {
             $setter = sprintf('set%s', ucfirst($key));
             if (!$class->hasMethod($setter)) {
                 throw new MissingMessageMetadataSetterException($key, $setter, $class->getName());
             }
-            $message->{$setter}($value);
+            $interopMessage->{$setter}($value);
         }
     }
 }
