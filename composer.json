@@ -22,7 +22,10 @@
         "enqueue/amqp-tools": "^0.9"
     },
     "autoload": {
-        "psr-4": { "Enqueue\\MessengerAdapter\\": "" }
+        "psr-4": { "Enqueue\\MessengerAdapter\\": "" },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
     "minimum-stability": "stable",
     "extra": {
