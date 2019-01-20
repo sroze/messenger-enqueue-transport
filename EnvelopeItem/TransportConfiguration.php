@@ -23,9 +23,14 @@ use Symfony\Component\Messenger\Stamp\StampInterface;
 final class TransportConfiguration implements StampInterface, \Serializable
 {
     /**
-     * @var array
+     * @var string
      */
     private $topic;
+
+    /**
+     * @var array
+     */
+    private $metadata;
 
     /**
      * @param array $configuration
@@ -37,21 +42,18 @@ final class TransportConfiguration implements StampInterface, \Serializable
     }
 
     /**
-     * Get topic.
-     *
-     * @return string $topic
+     * Get topic name.
      */
-    public function getTopic()
+    public function getTopic(): ?string
     {
         return $this->topic;
     }
 
     /**
-     * Get routing key.
-     *
-     * @return string $metadata
+     * Retrieve metadata information for decorating
+     * concrete implementations of Interop\Queue\Message.
      */
-    public function getMetadata()
+    public function getMetadata(): array
     {
         return $this->metadata;
     }
@@ -69,8 +71,6 @@ final class TransportConfiguration implements StampInterface, \Serializable
 
     /**
      * Unserialize object.
-     *
-     * @param string $serialized
      */
     public function unserialize($serialized)
     {
