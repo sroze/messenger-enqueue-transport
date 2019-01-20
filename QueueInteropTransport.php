@@ -144,7 +144,7 @@ class QueueInteropTransport implements TransportInterface
             if (!$this->contextManager->recoverException($e, $destination)) {
                 throw new SendingMessageFailedException($e->getMessage(), null, $e);
             }
-            
+
             // The context manager recovered the exception, we re-try.
             $envelope = $this->send($envelope);
         }
