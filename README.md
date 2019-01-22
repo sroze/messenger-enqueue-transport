@@ -76,9 +76,16 @@ use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 
 // ...
 
-$this->bus->dispatch((new Envelope($message))->with(new TransportConfiguration(
-    ['topic' => 'specific-topic']
-)));
+$this->bus->dispatch((new Envelope($message))
+    ->with(
+        (new TransportConfiguration())
+            ->setTopic('specific-topic')
+            ->setDeliveryDelay(5000)
+            // any other metadata to set onto the message
+            // setRoutingKey() will be called on the Enqueue message
+            ->addMetadata('routingKey' => 'foo.bar')
+    )
+);
 ```
 
 ### Use AMQP topic exchange
