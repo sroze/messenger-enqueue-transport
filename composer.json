@@ -27,6 +27,9 @@
             "/Tests/"
         ]
     },
+    "suggest": {
+        "symfony/serializer-pack": "For using the serializer service"
+    },
     "minimum-stability": "stable",
     "extra": {
         "branch-alias": {

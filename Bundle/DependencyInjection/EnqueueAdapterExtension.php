@@ -25,5 +25,9 @@ class EnqueueAdapterExtension extends Extension
     {
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
+
+        if (!$container->hasDefinition('messenger.transport.serializer')) {
+            throw new \LogicException('The default Messenger serializer cannot be enabled as the Serializer support is not available. Try enabling it or running "composer require symfony/serializer-pack".');
+        }
     }
 }
