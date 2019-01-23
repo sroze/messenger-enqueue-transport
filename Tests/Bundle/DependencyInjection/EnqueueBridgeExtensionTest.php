@@ -35,10 +35,27 @@ class EnqueueBridgeExtensionTest extends TestCase
         $this->assertInstanceOf(ConfigurationExtensionInterface::class, $this->extension);
     }
 
-    public function testLoad()
+    /**
+     * @expectedException \LogicException
+     * @expectedExceptionMessage The default Messenger serializer cannot be enabled as the Serializer support is not available. Try enabling it or running "composer require symfony/serializer-pack".
+     */
+    public function testLoadWithoutDefaultConfiguration()
     {
         $containerBuilderProphecy = $this->prophesize(ContainerBuilder::class);
         $containerBuilderProphecy->fileExists(Argument::any())->willReturn(false);
+        $containerBuilderProphecy->hasDefinition('messenger.transport.serializer')->shouldBeCalled()->willReturn(false);
+        $containerBuilderProphecy->setDefinition('enqueue.messenger_transport.factory', Argument::allOf(Argument::type(Definition::class), Argument::that(function (Definition $definition) {
+            return $definition->hasTag('messenger.transport_factory');
+        })))->shouldBeCalled();
+
+        $this->extension->load(array(), $containerBuilderProphecy->reveal());
+    }
+
+    public function testLoadWithDefaultSymfonySerializer()
+    {
+        $containerBuilderProphecy = $this->prophesize(ContainerBuilder::class);
+        $containerBuilderProphecy->fileExists(Argument::any())->willReturn(false);
+        $containerBuilderProphecy->hasDefinition('messenger.transport.serializer')->shouldBeCalled()->willReturn(true);
         $containerBuilderProphecy->setDefinition('enqueue.messenger_transport.factory', Argument::allOf(Argument::type(Definition::class), Argument::that(function (Definition $definition) {
             return $definition->hasTag('messenger.transport_factory');
         })))->shouldBeCalled();
