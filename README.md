@@ -142,3 +142,17 @@ $bus->dispatch((new Envelope($message))->with(new TransportConfiguration([
     ]
 ])));
 ```
+
+### Configure custom Kafka message
+
+Here is the way to send a message with with some custom options:
+```php
+$this->bus->dispatch((new Envelope($message))->with(new TransportConfiguration([
+    'topic' => 'test_topic_name',
+    'metadata' => [
+        'key' => 'foo.bar',
+        'partition' => 0,
+        'timestamp' => (new \DateTimeImmutable())->getTimestamp(),
+        'messageId' => uniqid('kafka_', true),
+    ]
+])))
