@@ -26,6 +26,7 @@ use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use \Interop\Amqp\AmqpMessage;
 
 /**
  * Symfony Messenger transport.
@@ -138,6 +139,12 @@ class QueueInteropTransport implements TransportInterface
             $producer->setTimeToLive($this->options['timeToLive']);
         }
 
+        if (   $interopMessage instanceof AmqpMessage
+            && isset($this->options['deliveryMode'])
+        ) {
+            $interopMessage->setDeliveryMode($this->options['deliveryMode']);
+        }
+
         try {
             $producer->send($topic, $interopMessage);
         } catch (InteropQueueException $e) {
@@ -168,6 +175,7 @@ class QueueInteropTransport implements TransportInterface
             'delayStrategy' => RabbitMqDelayPluginDelayStrategy::class,
             'priority' => null,
             'timeToLive' => null,
+            'deliveryMode' => null,
             'topic' => array('name' => 'messages'),
             'queue' => array('name' => 'messages'),
         ));
@@ -176,6 +184,7 @@ class QueueInteropTransport implements TransportInterface
         $resolver->setAllowedTypes('deliveryDelay', array('null', 'int'));
         $resolver->setAllowedTypes('priority', array('null', 'int'));
         $resolver->setAllowedTypes('timeToLive', array('null', 'int'));
+        $resolver->setAllowedTypes('deliveryMode', array('null', 'int'));
         $resolver->setAllowedTypes('delayStrategy', array('null', 'string'));
 
         $resolver->setAllowedValues('delayStrategy', array(
