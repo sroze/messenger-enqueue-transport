@@ -26,7 +26,7 @@ use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use \Interop\Amqp\AmqpMessage;
+use Interop\Amqp\AmqpMessage;
 
 /**
  * Symfony Messenger transport.
@@ -139,7 +139,7 @@ class QueueInteropTransport implements TransportInterface
             $producer->setTimeToLive($this->options['timeToLive']);
         }
 
-        if (   $interopMessage instanceof AmqpMessage
+        if ($interopMessage instanceof AmqpMessage
             && isset($this->options['deliveryMode'])
         ) {
             $interopMessage->setDeliveryMode($this->options['deliveryMode']);
