@@ -105,7 +105,7 @@ class QueueInteropTransportTest extends TestCase
             'timeToLive' => 500,
             'receiveTimeout' => 500,
         );
-        $envelope = (new Envelope($message))->with(new TransportConfiguration(array('options' => $options)));;
+        $envelope = (new Envelope($message))->with(new TransportConfiguration(array('options' => $options)));
 
         $psrMessageProphecy = $this->prophesize(Message::class);
         $psrMessage = $psrMessageProphecy->reveal();

@@ -65,7 +65,7 @@ final class TransportConfiguration implements StampInterface, \Serializable
     }
 
     /**
-     * Retrieve producer options
+     * Retrieve producer options.
      *
      * @return array
      */
