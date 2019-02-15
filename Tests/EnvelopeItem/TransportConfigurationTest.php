@@ -33,6 +33,7 @@ class TransportConfigurationTest extends TestCase
         $transportConfiguration = new TransportConfiguration(array());
         $this->assertNull($transportConfiguration->getTopic());
         $this->assertEquals(array(), $transportConfiguration->getMetadata());
+        $this->assertEquals(array(), $transportConfiguration->getOptions());
     }
 
     public function testSerialization()
@@ -40,7 +41,14 @@ class TransportConfigurationTest extends TestCase
         $transportConfiguration = new TransportConfiguration(array(
             'topic' => 'foo',
             'metadata' => array('foo' => 'bar'),
+            'options' => array('deliveryDelay' => 5000, 'priority' => 1),
         ));
         $this->assertEquals($transportConfiguration, unserialize(serialize($transportConfiguration)));
+    }
+
+    public function testOptionsConfiguration()
+    {
+        $transportConfiguration = new TransportConfiguration(array('options' => array('deliveryDelay' => 5000, 'priority' => 99)));
+        $this->assertEquals(array('deliveryDelay' => '5000', 'priority' => 99), $transportConfiguration->getOptions());
     }
 }

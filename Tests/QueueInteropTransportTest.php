@@ -83,6 +83,66 @@ class QueueInteropTransportTest extends TestCase
                 'topic' => array('name' => $topicName),
                 'queue' => array('name' => $queueName),
                 'deliveryDelay' => 100,
+                'priority' => 100,
+                'timeToLive' => 100,
+                'receiveTimeout' => 100,
+            ),
+            true
+        );
+
+        $this->assertSame($envelope, $transport->send($envelope));
+    }
+
+    public function testSendWithOptionsFromConfiguration()
+    {
+        $topicName = 'topic';
+        $queueName = 'queue';
+        $message = new \stdClass();
+        $message->foo = 'bar';
+        $options = array(
+            'deliveryDelay' => 500,
+            'priority' => 500,
+            'timeToLive' => 500,
+            'receiveTimeout' => 500,
+        );
+        $envelope = (new Envelope($message))->with(new TransportConfiguration(array('options' => $options)));;
+
+        $psrMessageProphecy = $this->prophesize(Message::class);
+        $psrMessage = $psrMessageProphecy->reveal();
+        $topicProphecy = $this->prophesize(Topic::class);
+        $topic = $topicProphecy->reveal();
+
+        $producerProphecy = $this->prophesize(ProducerWithDelay::class);
+        $producerProphecy->setDeliveryDelay(500)->shouldBeCalled();
+        $producerProphecy->setDelayStrategy(new RabbitMqDelayPluginDelayStrategy())->shouldBeCalled();
+        $producerProphecy->setPriority(500)->shouldBeCalled();
+        $producerProphecy->setTimeToLive(500)->shouldBeCalled();
+        $producerProphecy->send($topic, $psrMessage)->shouldBeCalled();
+
+        $contextProphecy = $this->prophesize(Context::class);
+        $contextProphecy->createTopic($topicName)->shouldBeCalled()->willReturn($topic);
+        $contextProphecy->createProducer()->shouldBeCalled()->willReturn($producerProphecy->reveal());
+        $contextProphecy->createMessage('foo', array(), array())->shouldBeCalled()->willReturn($psrMessage);
+
+        $contextManagerProphecy = $this->prophesize(ContextManager::class);
+        $contextManagerProphecy->context()->shouldBeCalled()->willReturn($contextProphecy->reveal());
+        $contextManagerProphecy->ensureExists(array(
+            'topic' => $topicName,
+            'topicOptions' => array('name' => $topicName),
+            'queue' => $queueName,
+            'queueOptions' => array('name' => $queueName),
+        ))->shouldBeCalled();
+
+        $encoderProphecy = $this->prophesize(SerializerInterface::class);
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+
+        $transport = $this->getTransport(
+            $encoderProphecy->reveal(),
+            $contextManagerProphecy->reveal(),
+            array(
+                'topic' => array('name' => $topicName),
+                'queue' => array('name' => $queueName),
+                'deliveryDelay' => 100,
                 'delayStrategy' => RabbitMqDelayPluginDelayStrategy::class,
                 'priority' => 100,
                 'timeToLive' => 100,

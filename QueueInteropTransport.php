@@ -124,18 +124,19 @@ class QueueInteropTransport implements TransportInterface
         $this->setMessageMetadata($interopMessage, $envelope);
 
         $producer = $context->createProducer();
+        $options = $this->getOptions($envelope);
 
-        if (isset($this->options['deliveryDelay'])) {
+        if (isset($options['deliveryDelay'])) {
             if ($producer instanceof DelayStrategyAware) {
-                $producer->setDelayStrategy($this->options['delayStrategy']);
+                $producer->setDelayStrategy($options['delayStrategy']);
             }
-            $producer->setDeliveryDelay($this->options['deliveryDelay']);
+            $producer->setDeliveryDelay($options['deliveryDelay']);
         }
-        if (isset($this->options['priority'])) {
-            $producer->setPriority($this->options['priority']);
+        if (isset($options['priority'])) {
+            $producer->setPriority($options['priority']);
         }
-        if (isset($this->options['timeToLive'])) {
-            $producer->setTimeToLive($this->options['timeToLive']);
+        if (isset($options['timeToLive'])) {
+            $producer->setTimeToLive($options['timeToLive']);
         }
 
         try {
@@ -221,5 +222,16 @@ class QueueInteropTransport implements TransportInterface
             }
             $interopMessage->{$setter}($value);
         }
+    }
+
+    private function getOptions(Envelope $envelope): array
+    {
+        $configuration = $envelope->last(TransportConfiguration::class);
+
+        if (null === $configuration) {
+            return $this->options;
+        }
+
+        return array_merge($this->options, $configuration->getOptions());
     }
 }

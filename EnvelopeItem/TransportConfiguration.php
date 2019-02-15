@@ -33,12 +33,18 @@ final class TransportConfiguration implements StampInterface, \Serializable
     private $metadata;
 
     /**
+     * @var array
+     */
+    private $options;
+
+    /**
      * @param array $configuration
      */
     public function __construct(array $configuration)
     {
         $this->topic = $configuration['topic'] ?? null;
         $this->metadata = $configuration['metadata'] ?? array();
+        $this->options = $configuration['options'] ?? array();
     }
 
     /**
@@ -59,6 +65,16 @@ final class TransportConfiguration implements StampInterface, \Serializable
     }
 
     /**
+     * Retrieve producer options
+     *
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
+
+    /**
      * Serialize object.
      */
     public function serialize()
@@ -66,6 +82,7 @@ final class TransportConfiguration implements StampInterface, \Serializable
         return serialize(array(
             'topic' => $this->topic,
             'metadata' => $this->metadata,
+            'options' => $this->options,
         ));
     }
 
@@ -76,12 +93,14 @@ final class TransportConfiguration implements StampInterface, \Serializable
     {
         list(
             'topic' => $topic,
-            'metadata' => $metadata
+            'metadata' => $metadata,
+            'options' => $options
         ) = unserialize($serialized, array('allowed_classes' => false));
 
         $this->__construct(array(
             'topic' => $topic,
             'metadata' => $metadata,
+            'options' => $options,
         ));
     }
 }
