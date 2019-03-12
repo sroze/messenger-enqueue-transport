@@ -65,25 +65,53 @@ enqueue://default
     &priority=1
 ```
 
-### Send a message on a specific topic
+### Setting Custom Configuration on your Message
 
-You can send a message on a specific topic using `TransportConfiguration` envelope item with your message:
+Each Enqueue transport (e.g. amqp, redis, etc) has its own message object
+that can normally be configured by calling setter methods (e.g.
+`$message->setDeliveryDelay(5000)`). But in Messenger, you don't have access
+to these objects directly. Instead, you can set them indirectly via
+the `TransportConfiguration` stamp:
+
 ```php
 use Symfony\Component\Messenger\Envelope;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 
 // ...
 
-$this->bus->dispatch((new Envelope($message))
-    ->with(
-        (new TransportConfiguration())
-            ->setTopic('specific-topic')
-            ->setDeliveryDelay(5000)
-            // any other metadata to set onto the message
-            // setRoutingKey() will be called on the Enqueue message
-            ->addMetadata('routingKey' => 'foo.bar')
-    )
-);
+// create your message like normal
+$message = // ...
+
+$transportConfig = (new TransportConfiguration())
+    // commmon options have a convenient method
+    ->setDeliveryDelay(5000)
+
+    // other transport-specific options are set via metadata
+    // example custom option for AmqpMessage
+    // each "metadata" will map to a setter on your message
+    // will result in setDeliveryMode(AmqpMessage::DELIVERY_MODE_PERSISTENT)
+    // being called
+    ->addMetadata('deliveryMode', AmqpMessage::DELIVERY_MODE_PERSISTENT)
+;
+
+$bus->dispatch((new Envelope($message))->with($transportConfig));
+```
+
+### Send a message on a specific topic
+
+You can send a message on a specific topic using `TransportConfiguration` envelope item with your message:
+
+```php
+use Symfony\Component\Messenger\Envelope;
+use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
+
+// ...
+
+$transportConfig = (new TransportConfiguration())
+    ->setTopic('specific-topic')
+;
+
+$bus->dispatch((new Envelope($message))->with($transportConfig));
 ```
 
 ### Use AMQP topic exchange
@@ -105,8 +133,9 @@ enqueue://default
 ```
 
 Here is the way to send a message with a routing key matching this consumer:
+
 ```php
-$this->bus->dispatch((new Envelope($message))->with(new TransportConfiguration([
+$bus->dispatch((new Envelope($message))->with(new TransportConfiguration([
     'topic' => 'topic_name',
     'metadata' => [
         'routingKey' => 'foo.bar'
