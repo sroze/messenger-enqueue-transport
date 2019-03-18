@@ -2,8 +2,6 @@
 
 This Symfony Messenger transport allows you to use Enqueue to send and receive your messages from all the supported brokers.
 
-## All questions regarding messenger should be asked on this repo.  
-
 ## Usage
 
 1. Install the transport
