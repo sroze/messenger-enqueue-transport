@@ -115,7 +115,7 @@ class DecoratedPsrMessage implements Message
      */
     public function getProperty(string $name, $default = null)
     {
-        return array_key_exists($name, $this->properties) ? $this->properties[$name] : $default;
+        return \array_key_exists($name, $this->properties) ? $this->properties[$name] : $default;
     }
 
     /**
@@ -147,7 +147,7 @@ class DecoratedPsrMessage implements Message
      */
     public function getHeader(string $name, $default = null)
     {
-        return array_key_exists($name, $this->headers) ? $this->headers[$name] : $default;
+        return \array_key_exists($name, $this->headers) ? $this->headers[$name] : $default;
     }
 
     /**

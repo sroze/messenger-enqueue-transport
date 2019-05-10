@@ -14,8 +14,7 @@ namespace Enqueue\MessengerAdapter;
 use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
-use Enqueue\MessengerAdapter\Exception\RejectMessageException;
-use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
+use Interop\Queue\Consumer;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
@@ -39,7 +38,6 @@ class QueueInteropTransport implements TransportInterface
     private $contextManager;
     private $options;
     private $debug;
-    private $shouldStop;
 
     public function __construct(
         SerializerInterface $serializer,
@@ -59,45 +57,53 @@ class QueueInteropTransport implements TransportInterface
     /**
      * {@inheritdoc}
      */
-    public function receive(callable $handler): void
+    public function get(): iterable
     {
-        $context = $this->contextManager->context();
         $destination = $this->getDestination(null);
-        $queue = $context->createQueue($destination['queue']);
-        $consumer = $context->createConsumer($queue);
 
         if ($this->debug) {
             $this->contextManager->ensureExists($destination);
         }
 
-        while (!$this->shouldStop) {
-            try {
-                if (null === ($interopMessage = $consumer->receive($this->options['receiveTimeout'] ?? 30000))) {
-                    $handler(null);
-                    continue;
-                }
-            } catch (\Exception $e) {
-                if ($this->contextManager->recoverException($e, $destination)) {
-                    continue;
-                }
-
-                throw $e;
+        try {
+            if (null === ($interopMessage = $this->getConsumer()->receive($this->options['receiveTimeout'] ?? 30000))) {
+                return array();
+            }
+        } catch (\Exception $e) {
+            if ($this->contextManager->recoverException($e, $destination)) {
+                return array();
             }
 
-            try {
-                $handler($this->serializer->decode(array(
-                    'body' => $interopMessage->getBody(),
-                    'headers' => $interopMessage->getHeaders(),
-                    'properties' => $interopMessage->getProperties(),
-                )));
-
-                $consumer->acknowledge($interopMessage);
-            } catch (RejectMessageException $e) {
-                $consumer->reject($interopMessage);
-            } catch (RequeueMessageException $e) {
-                $consumer->reject($interopMessage, true);
-            }
+            throw $e;
         }
+
+        return array(
+            $this->serializer->decode(array(
+                'body' => $interopMessage->getBody(),
+                'headers' => $interopMessage->getHeaders(),
+                'properties' => $interopMessage->getProperties(),
+            )),
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function ack(Envelope $envelope): void
+    {
+        $interopMessage = $this->encodeMessage($envelope);
+
+        $this->getConsumer()->acknowledge($interopMessage);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function reject(Envelope $envelope): void
+    {
+        $interopMessage = $this->encodeMessage($envelope);
+
+        $this->getConsumer()->reject($interopMessage);
     }
 
     /**
@@ -113,13 +119,7 @@ class QueueInteropTransport implements TransportInterface
             $this->contextManager->ensureExists($destination);
         }
 
-        $encodedMessage = $this->serializer->encode($envelope);
-
-        $interopMessage = $context->createMessage(
-            $encodedMessage['body'],
-            $encodedMessage['properties'] ?? array(),
-            $encodedMessage['headers'] ?? array()
-        );
+        $interopMessage = $this->encodeMessage($envelope);
 
         $this->setMessageMetadata($interopMessage, $envelope);
 
@@ -150,14 +150,6 @@ class QueueInteropTransport implements TransportInterface
         }
 
         return $envelope;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function stop(): void
-    {
-        $this->shouldStop = true;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -221,5 +213,28 @@ class QueueInteropTransport implements TransportInterface
             }
             $interopMessage->{$setter}($value);
         }
+    }
+
+    private function encodeMessage(Envelope $envelope): Message
+    {
+        $context = $this->contextManager->context();
+        $encodedMessage = $this->serializer->encode($envelope);
+
+        $interopMessage = $context->createMessage(
+            $encodedMessage['body'],
+            $encodedMessage['properties'] ?? array(),
+            $encodedMessage['headers'] ?? array()
+        );
+
+        return $interopMessage;
+    }
+
+    private function getConsumer(): Consumer
+    {
+        $context = $this->contextManager->context();
+        $destination = $this->getDestination(null);
+        $queue = $context->createQueue($destination['queue']);
+
+        return $context->createConsumer($queue);
     }
 }

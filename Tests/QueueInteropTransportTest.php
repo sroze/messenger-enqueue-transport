@@ -390,13 +390,9 @@ class QueueInteropTransportTest extends TestCase
         $contextManagerProphecy->context()->shouldBeCalled()->willReturn($contextProphecy->reveal());
 
         $transport = $this->getTransport(null, $contextManagerProphecy->reveal());
-        $handlerArgument = 'not-null';
-        $handler = function ($argument) use (&$handlerArgument, $transport) {
-            $handlerArgument = $argument;
-            $transport->stop();
-        };
-        $transport->receive($handler);
-        $this->assertNull($handlerArgument);
+        $messages = $transport->get();
+
+        $this->assertEmpty($messages);
     }
 
     private function getTransport(

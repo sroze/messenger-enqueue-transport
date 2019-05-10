@@ -39,6 +39,9 @@ class EnqueueBridgeExtensionTest extends TestCase
     {
         $containerBuilderProphecy = $this->prophesize(ContainerBuilder::class);
         $containerBuilderProphecy->fileExists(Argument::any())->willReturn(false);
+        if (method_exists(ContainerBuilder::class, 'removeBindings')) {
+            $containerBuilderProphecy->removeBindings('enqueue.messenger_transport.factory')->shouldBeCalledOnce();
+        }
         $containerBuilderProphecy->setDefinition('enqueue.messenger_transport.factory', Argument::allOf(Argument::type(Definition::class), Argument::that(function (Definition $definition) {
             return $definition->hasTag('messenger.transport_factory');
         })))->shouldBeCalled();
