@@ -39,7 +39,7 @@ class MessageBusProcessorTest extends TestCase
     public function testProcess()
     {
         $message = $this->getTestMessage();
-        $receivedMessage = new ReceivedStamp();
+        $receivedMessage = new ReceivedStamp('test');
         $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(Context::class);
         $busProphecy = $this->prophesize(MessageBusInterface::class);
@@ -57,7 +57,7 @@ class MessageBusProcessorTest extends TestCase
     public function testProcessReject()
     {
         $message = $this->getTestMessage();
-        $receivedMessage = new ReceivedStamp();
+        $receivedMessage = new ReceivedStamp('test');
         $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(Context::class);
         $decoderProphecy = $this->prophesize(SerializerInterface::class);
@@ -71,7 +71,7 @@ class MessageBusProcessorTest extends TestCase
     public function testProcessRequeue()
     {
         $message = $this->getTestMessage();
-        $receivedMessage = new ReceivedStamp();
+        $receivedMessage = new ReceivedStamp('test');
         $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(Context::class);
         $decoderProphecy = $this->prophesize(SerializerInterface::class);
@@ -85,7 +85,7 @@ class MessageBusProcessorTest extends TestCase
     public function testProcessRejectAnyException()
     {
         $message = $this->getTestMessage();
-        $receivedMessage = new ReceivedStamp();
+        $receivedMessage = new ReceivedStamp('test');
         $envelope = new Envelope($receivedMessage);
         $contextProphecy = $this->prophesize(Context::class);
         $decoderProphecy = $this->prophesize(SerializerInterface::class);
