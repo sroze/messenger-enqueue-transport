@@ -7,7 +7,7 @@ This Symfony Messenger transport allows you to use Enqueue to send and receive y
 1. Install the transport
 
 ```
-composer req enqueue/messenger-adapter
+composer req sroze/messenger-enqueue-transport
 ```
 
 2. Configure the Enqueue bundle as you would normaly do ([see Enqueue's Bundle documentation](https://github.com/php-enqueue/enqueue-dev/blob/master/docs/bundle/quick_tour.md)). If you are using the recipes, you should
