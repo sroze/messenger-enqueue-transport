@@ -1,5 +1,5 @@
 {
-    "name": "enqueue/messenger-adapter",
+    "name": "sroze/messenger-enqueue-transport",
     "type": "symfony-bundle",
     "description": "Enqueue adapter for Symfony Messenger component",
     "keywords": ["symfony", "messenger", "enqueue"],
