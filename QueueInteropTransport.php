@@ -14,6 +14,7 @@ namespace Enqueue\MessengerAdapter;
 use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
+use Enqueue\MessengerAdapter\EnvelopeItem\InteropMessageStamp;
 use Interop\Queue\Consumer;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
@@ -77,13 +78,18 @@ class QueueInteropTransport implements TransportInterface
             throw $e;
         }
 
-        return array(
-            $this->serializer->decode(array(
-                'body' => $interopMessage->getBody(),
-                'headers' => $interopMessage->getHeaders(),
-                'properties' => $interopMessage->getProperties(),
-            )),
-        );
+        /** @var Envelope $envelope */
+        $envelope = $this->serializer->decode(array(
+            'body' => $interopMessage->getBody(),
+            'headers' => $interopMessage->getHeaders(),
+            'properties' => $interopMessage->getProperties(),
+        ));
+
+        if ($envelope) {
+            $envelope = $envelope->with(new InteropMessageStamp($interopMessage));
+        }
+
+        return array($envelope);
     }
 
     /**
@@ -217,6 +223,13 @@ class QueueInteropTransport implements TransportInterface
 
     private function encodeMessage(Envelope $envelope): Message
     {
+        /** @var InteropMessageStamp $interopStamp */
+        $interopStamp = $envelope->last(InteropMessageStamp::class);
+
+        if ($interopStamp) {
+            return $interopStamp->getMessage();
+        }
+
         $context = $this->contextManager->context();
         $encodedMessage = $this->serializer->encode($envelope);
 
