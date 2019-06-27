@@ -21,6 +21,9 @@
         "symfony/options-resolver": "^3.4|^4.2",
         "enqueue/amqp-tools": "^0.9"
     },
+    "replace": {
+        "enqueue/messenger-adapter": ">0.2.2"
+    },
     "autoload": {
         "psr-4": { "Enqueue\\MessengerAdapter\\": "" },
         "exclude-from-classmap": [
