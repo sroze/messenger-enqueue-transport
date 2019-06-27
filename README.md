@@ -45,7 +45,7 @@ framework:
 5. Consume!
 
 ```bash
-bin/console messenger:consume-messages amqp
+bin/console messenger:consume amqp
 ```
 
 ## Advanced usage
