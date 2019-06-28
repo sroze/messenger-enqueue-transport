@@ -17,6 +17,7 @@ use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
 use Enqueue\MessengerAdapter\EnvelopeItem\InteropMessageStamp;
 use Interop\Queue\Consumer;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\LogicException;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Interop\Queue\Exception as InteropQueueException;
@@ -78,16 +79,13 @@ class QueueInteropTransport implements TransportInterface
             throw $e;
         }
 
-        /** @var Envelope $envelope */
         $envelope = $this->serializer->decode(array(
             'body' => $interopMessage->getBody(),
             'headers' => $interopMessage->getHeaders(),
             'properties' => $interopMessage->getProperties(),
         ));
 
-        if ($envelope) {
-            $envelope = $envelope->with(new InteropMessageStamp($interopMessage));
-        }
+        $envelope = $envelope->with(new InteropMessageStamp($interopMessage));
 
         return array($envelope);
     }
@@ -97,7 +95,7 @@ class QueueInteropTransport implements TransportInterface
      */
     public function ack(Envelope $envelope): void
     {
-        $interopMessage = $this->encodeMessage($envelope);
+        $interopMessage = $this->findMessage($envelope);
 
         $this->getConsumer()->acknowledge($interopMessage);
     }
@@ -107,7 +105,7 @@ class QueueInteropTransport implements TransportInterface
      */
     public function reject(Envelope $envelope): void
     {
-        $interopMessage = $this->encodeMessage($envelope);
+        $interopMessage = $this->findMessage($envelope);
 
         $this->getConsumer()->reject($interopMessage);
     }
@@ -223,13 +221,6 @@ class QueueInteropTransport implements TransportInterface
 
     private function encodeMessage(Envelope $envelope): Message
     {
-        /** @var InteropMessageStamp $interopStamp */
-        $interopStamp = $envelope->last(InteropMessageStamp::class);
-
-        if ($interopStamp) {
-            return $interopStamp->getMessage();
-        }
-
         $context = $this->contextManager->context();
         $encodedMessage = $this->serializer->encode($envelope);
 
@@ -240,6 +231,18 @@ class QueueInteropTransport implements TransportInterface
         );
 
         return $interopMessage;
+    }
+
+    private function findMessage(Envelope $envelope): Message
+    {
+        /** @var InteropMessageStamp $interopStamp */
+        $interopStamp = $envelope->last(InteropMessageStamp::class);
+
+        if (null === $interopStamp) {
+            throw new LogicException('No InteropMessageStamp found in the Envelope.');
+        }
+
+        return $interopStamp->getMessage();
     }
 
     private function getConsumer(): Consumer

@@ -12,9 +12,9 @@
 namespace Enqueue\MessengerAdapter\EnvelopeItem;
 
 use Interop\Queue\Message;
-use Symfony\Component\Messenger\Stamp\StampInterface;
+use Symfony\Component\Messenger\Stamp\NonSendableStampInterface;
 
-final class InteropMessageStamp implements StampInterface
+final class InteropMessageStamp implements NonSendableStampInterface
 {
     /** @var Message */
     private $message;
