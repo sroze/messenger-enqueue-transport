@@ -159,6 +159,7 @@ class QueueInteropTransport implements TransportInterface
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(array(
+            'transport_name' => null,
             'receiveTimeout' => null,
             'deliveryDelay' => null,
             'delayStrategy' => RabbitMqDelayPluginDelayStrategy::class,
@@ -168,6 +169,7 @@ class QueueInteropTransport implements TransportInterface
             'queue' => array('name' => 'messages'),
         ));
 
+        $resolver->setAllowedTypes('transport_name', array('null', 'string'));
         $resolver->setAllowedTypes('receiveTimeout', array('null', 'int'));
         $resolver->setAllowedTypes('deliveryDelay', array('null', 'int'));
         $resolver->setAllowedTypes('priority', array('null', 'int'));
