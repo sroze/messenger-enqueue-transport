@@ -23,6 +23,7 @@ use Interop\Queue\Exception as InteropQueueException;
 use Interop\Queue\Message;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\LogicException;
+use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Symfony\Component\OptionsResolver\Options;
@@ -129,12 +130,20 @@ class QueueInteropTransport implements TransportInterface
 
         $producer = $context->createProducer();
 
-        if (isset($this->options['deliveryDelay'])) {
+        $delay = 0;
+        $delayStamp = $envelope->last(DelayStamp::class);
+        if (null !== $delayStamp) {
+            $delay = $delayStamp->getDelay();
+        } elseif (isset($this->options['deliveryDelay'])) {
+            $delay = $this->options['deliveryDelay'];
+        }
+        if ($delay > 0) {
             if ($producer instanceof DelayStrategyAware) {
                 $producer->setDelayStrategy($this->options['delayStrategy']);
             }
-            $producer->setDeliveryDelay($this->options['deliveryDelay']);
+            $producer->setDeliveryDelay($delay);
         }
+
         if (isset($this->options['priority'])) {
             $producer->setPriority($this->options['priority']);
         }
