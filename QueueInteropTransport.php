@@ -227,7 +227,7 @@ class QueueInteropTransport implements TransportInterface
             && $this->serializer instanceof Serializer
         ) {
             // populates rabbit message's headers property
-            $properties = $encodedMessage['headers'] ?? [];
+            $properties = $encodedMessage['headers'] ?? array();
 
             // populates rabbit message's properties (only those that match valid key)
             $headers = $properties;
@@ -236,8 +236,8 @@ class QueueInteropTransport implements TransportInterface
                 $headers['content_type'] = $headers['Content-Type'];
             }
         } else {
-            $properties = $encodedMessage['properties'] ?? [];
-            $headers = $encodedMessage['headers'] ?? [];
+            $properties = $encodedMessage['properties'] ?? array();
+            $headers = $encodedMessage['headers'] ?? array();
         }
 
         $interopMessage = $context->createMessage(
