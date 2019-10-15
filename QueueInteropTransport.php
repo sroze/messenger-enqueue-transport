@@ -20,7 +20,7 @@ use Interop\Amqp\AmqpMessage;
 use Interop\Queue\Consumer;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\LogicException;
-use Symfony\Component\Messenger\Transport\Serialization\Serializer;
+use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Interop\Queue\Exception as InteropQueueException;
@@ -224,7 +224,7 @@ class QueueInteropTransport implements TransportInterface
         $encodedMessage = $this->serializer->encode($envelope);
 
         if (   $context instanceof AmqpContext
-            && $this->serializer instanceof Serializer
+            && !$this->serializer instanceof PhpSerializer
         ) {
             // populates rabbit message's headers property
             $properties = $encodedMessage['headers'] ?? array();
@@ -252,7 +252,7 @@ class QueueInteropTransport implements TransportInterface
     private function decodeMessage(InteropMessage $interopMessage): Envelope
     {
         if (   $interopMessage instanceof AmqpMessage
-            && $this->serializer instanceof Serializer
+            && !$this->serializer instanceof PhpSerializer
         ) {
             $envelope = $this->serializer->decode(array(
                 'body'       => $interopMessage->getBody(),
