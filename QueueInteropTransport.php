@@ -15,13 +15,16 @@ use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
 use Enqueue\MessengerAdapter\EnvelopeItem\InteropMessageStamp;
+use Interop\Amqp\AmqpContext;
+use Interop\Amqp\AmqpMessage;
 use Interop\Queue\Consumer;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\LogicException;
+use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Interop\Queue\Exception as InteropQueueException;
-use Interop\Queue\Message;
+use Interop\Queue\Message as InteropMessage;
 use Enqueue\MessengerAdapter\Exception\MissingMessageMetadataSetterException;
 use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
@@ -79,13 +82,7 @@ class QueueInteropTransport implements TransportInterface
             throw $e;
         }
 
-        $envelope = $this->serializer->decode(array(
-            'body' => $interopMessage->getBody(),
-            'headers' => $interopMessage->getHeaders(),
-            'properties' => $interopMessage->getProperties(),
-        ));
-
-        $envelope = $envelope->with(new InteropMessageStamp($interopMessage));
+        $envelope = $this->decodeMessage($interopMessage);
 
         return array($envelope);
     }
@@ -201,7 +198,7 @@ class QueueInteropTransport implements TransportInterface
         );
     }
 
-    private function setMessageMetadata(Message $interopMessage, Envelope $envelope): void
+    private function setMessageMetadata(InteropMessage $interopMessage, Envelope $envelope): void
     {
         $configuration = $envelope->last(TransportConfiguration::class);
 
@@ -221,21 +218,61 @@ class QueueInteropTransport implements TransportInterface
         }
     }
 
-    private function encodeMessage(Envelope $envelope): Message
+    private function encodeMessage(Envelope $envelope): InteropMessage
     {
         $context = $this->contextManager->context();
         $encodedMessage = $this->serializer->encode($envelope);
 
+        if ($context instanceof AmqpContext
+            && !$this->serializer instanceof PhpSerializer
+        ) {
+            // populates rabbit message's headers property
+            $properties = $encodedMessage['headers'] ?? array();
+
+            // populates rabbit message's properties (only those that match valid key)
+            $headers = $properties;
+
+            if (isset($headers['Content-Type'])) {
+                $headers['content_type'] = $headers['Content-Type'];
+            }
+        } else {
+            $properties = $encodedMessage['properties'] ?? array();
+            $headers = $encodedMessage['headers'] ?? array();
+        }
+
         $interopMessage = $context->createMessage(
             $encodedMessage['body'],
-            $encodedMessage['properties'] ?? array(),
-            $encodedMessage['headers'] ?? array()
+            $properties,
+            $headers
         );
 
         return $interopMessage;
     }
 
-    private function findMessage(Envelope $envelope): Message
+    private function decodeMessage(InteropMessage $interopMessage): Envelope
+    {
+        if ($interopMessage instanceof AmqpMessage
+            && !$this->serializer instanceof PhpSerializer
+        ) {
+            $envelope = $this->serializer->decode(array(
+                'body' => $interopMessage->getBody(),
+                'headers' => $interopMessage->getProperties(),
+                'properties' => $interopMessage->getHeaders(),
+            ));
+        } else {
+            $envelope = $this->serializer->decode(array(
+                'body' => $interopMessage->getBody(),
+                'headers' => $interopMessage->getHeaders(),
+                'properties' => $interopMessage->getProperties(),
+            ));
+        }
+
+        $envelope = $envelope->with(new InteropMessageStamp($interopMessage));
+
+        return $envelope;
+    }
+
+    private function findMessage(Envelope $envelope): InteropMessage
     {
         /** @var InteropMessageStamp $interopStamp */
         $interopStamp = $envelope->last(InteropMessageStamp::class);
