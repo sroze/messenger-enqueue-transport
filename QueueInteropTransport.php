@@ -223,7 +223,7 @@ class QueueInteropTransport implements TransportInterface
         $context = $this->contextManager->context();
         $encodedMessage = $this->serializer->encode($envelope);
 
-        if (   $context instanceof AmqpContext
+        if ($context instanceof AmqpContext
             && !$this->serializer instanceof PhpSerializer
         ) {
             // populates rabbit message's headers property
@@ -251,18 +251,18 @@ class QueueInteropTransport implements TransportInterface
 
     private function decodeMessage(InteropMessage $interopMessage): Envelope
     {
-        if (   $interopMessage instanceof AmqpMessage
+        if ($interopMessage instanceof AmqpMessage
             && !$this->serializer instanceof PhpSerializer
         ) {
             $envelope = $this->serializer->decode(array(
-                'body'       => $interopMessage->getBody(),
-                'headers'    => $interopMessage->getProperties(),
+                'body' => $interopMessage->getBody(),
+                'headers' => $interopMessage->getProperties(),
                 'properties' => $interopMessage->getHeaders(),
             ));
         } else {
             $envelope = $this->serializer->decode(array(
-                'body'       => $interopMessage->getBody(),
-                'headers'    => $interopMessage->getHeaders(),
+                'body' => $interopMessage->getBody(),
+                'headers' => $interopMessage->getHeaders(),
                 'properties' => $interopMessage->getProperties(),
             ));
         }
