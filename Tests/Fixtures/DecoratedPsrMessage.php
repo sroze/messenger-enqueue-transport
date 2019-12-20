@@ -57,8 +57,6 @@ class DecoratedPsrMessage implements Message
 
     /**
      * @param string $body
-     * @param array  $properties
-     * @param array  $headers
      */
     public function __construct($body = '', array $properties = array(), array $headers = array())
     {

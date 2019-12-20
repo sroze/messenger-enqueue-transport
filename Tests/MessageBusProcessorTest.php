@@ -11,18 +11,18 @@
 
 namespace Enqueue\MessengerAdapter\Tests;
 
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Stamp\ReceivedStamp;
-use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
-use Interop\Queue\Message;
-use Interop\Queue\Context;
-use Interop\Queue\Processor;
-use Enqueue\MessengerAdapter\MessageBusProcessor;
 use Enqueue\MessengerAdapter\Exception\RejectMessageException;
 use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
+use Enqueue\MessengerAdapter\MessageBusProcessor;
+use Interop\Queue\Context;
+use Interop\Queue\Message;
+use Interop\Queue\Processor;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\ReceivedStamp;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
 class MessageBusProcessorTest extends TestCase
 {

@@ -12,10 +12,10 @@
 namespace Enqueue\MessengerAdapter;
 
 use Interop\Queue\Context;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
-use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
-use Psr\Container\ContainerInterface;
 
 /**
  * Symfony Messenger transport factory.
@@ -81,11 +81,7 @@ class QueueInteropTransportFactory implements TransportFactoryInterface
         }
 
         if (!$this->container->has($contextService = 'enqueue.transport.'.$enqueueContextName.'.context')) {
-            throw new \RuntimeException(sprintf(
-                'Can\'t find Enqueue\'s transport named "%s": Service "%s" is not found.',
-                $enqueueContextName,
-                $contextService
-            ));
+            throw new \RuntimeException(sprintf('Can\'t find Enqueue\'s transport named "%s": Service "%s" is not found.', $enqueueContextName, $contextService));
         }
 
         $context = $this->container->get($contextService);

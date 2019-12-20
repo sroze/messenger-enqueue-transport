@@ -11,8 +11,8 @@
 
 namespace Enqueue\MessengerAdapter\Tests\EnvelopeItem;
 
-use PHPUnit\Framework\TestCase;
 use Enqueue\MessengerAdapter\Exception\MissingMessageMetadataSetterException;
+use PHPUnit\Framework\TestCase;
 
 class MissingMessageMetadataSetterExceptionTest extends TestCase
 {

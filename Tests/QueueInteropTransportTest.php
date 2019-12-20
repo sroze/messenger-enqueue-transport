@@ -13,22 +13,22 @@ namespace Enqueue\MessengerAdapter\Tests;
 
 use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
+use Enqueue\MessengerAdapter\ContextManager;
+use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
+use Enqueue\MessengerAdapter\Exception\MissingMessageMetadataSetterException;
 use Enqueue\MessengerAdapter\QueueInteropTransport;
+use Enqueue\MessengerAdapter\Tests\Fixtures\DecoratedPsrMessage;
 use Interop\Queue\Consumer;
+use Interop\Queue\Context;
+use Interop\Queue\Exception\Exception;
+use Interop\Queue\Message;
+use Interop\Queue\Producer;
 use Interop\Queue\Queue;
 use Interop\Queue\Topic;
 use PHPUnit\Framework\TestCase;
-use Interop\Queue\Context;
-use Interop\Queue\Producer;
-use Interop\Queue\Message;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
-use Enqueue\MessengerAdapter\ContextManager;
-use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
-use Interop\Queue\Exception\Exception;
 use Symfony\Component\Messenger\Transport\TransportInterface;
-use Enqueue\MessengerAdapter\Exception\MissingMessageMetadataSetterException;
-use Enqueue\MessengerAdapter\Tests\Fixtures\DecoratedPsrMessage;
 
 class QueueInteropTransportTest extends TestCase
 {

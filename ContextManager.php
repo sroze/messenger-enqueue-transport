@@ -23,8 +23,6 @@ interface ContextManager
 {
     /**
      * Returns the associated `context` object.
-     *
-     * @return Context
      */
     public function context(): Context;
 
@@ -32,11 +30,6 @@ interface ContextManager
      * Recover from the given exception. This can typically be something like the queue or topic do not exists.
      *
      * Returns `true` if it did manage to recover and `false` if it can't.
-     *
-     * @param \Exception $exception
-     * @param array      $destination
-     *
-     * @return bool
      */
     public function recoverException(\Exception $exception, array $destination): bool;
 
@@ -44,10 +37,6 @@ interface ContextManager
      * Ensure that the given destination exists.
      *
      * In the example of AMQP, it will create the topic, queue & binding.
-     *
-     * @param array $destination
-     *
-     * @return bool
      */
     public function ensureExists(array $destination): bool;
 }
