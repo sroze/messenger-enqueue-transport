@@ -11,13 +11,13 @@
 
 namespace Enqueue\MessengerAdapter;
 
+use Enqueue\MessengerAdapter\Exception\RejectMessageException;
+use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
 use Interop\Queue\Context;
 use Interop\Queue\Message;
 use Interop\Queue\Processor;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
-use Enqueue\MessengerAdapter\Exception\RejectMessageException;
-use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
 
 /**
  * The processor could be used with any queue interop compatible consumer, for example Enqueue's QueueConsumer.

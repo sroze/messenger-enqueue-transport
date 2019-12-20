@@ -11,13 +11,13 @@
 
 namespace Enqueue\MessengerAdapter\Tests;
 
-use PHPUnit\Framework\TestCase;
+use Enqueue\MessengerAdapter\AmqpContextManager;
 use Interop\Amqp\AmqpContext;
 use Interop\Amqp\AmqpQueue;
 use Interop\Amqp\AmqpTopic;
 use Interop\Amqp\Impl\AmqpBind;
 use Interop\Queue\Context;
-use Enqueue\MessengerAdapter\AmqpContextManager;
+use PHPUnit\Framework\TestCase;
 
 class AmqpContextManagerTest extends TestCase
 {

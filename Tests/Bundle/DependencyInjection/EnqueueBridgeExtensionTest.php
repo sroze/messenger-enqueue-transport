@@ -11,13 +11,13 @@
 
 namespace Enqueue\MessengerAdapter\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Enqueue\MessengerAdapter\Bundle\DependencyInjection\EnqueueAdapterExtension;
-use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
-use Symfony\Component\DependencyInjection\Extension\ConfigurationExtensionInterface;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Extension\ConfigurationExtensionInterface;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
 class EnqueueBridgeExtensionTest extends TestCase
 {

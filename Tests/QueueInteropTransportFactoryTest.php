@@ -12,13 +12,13 @@
 namespace Enqueue\MessengerAdapter\Tests;
 
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
+use Enqueue\MessengerAdapter\AmqpContextManager;
 use Enqueue\MessengerAdapter\QueueInteropTransport;
 use Enqueue\MessengerAdapter\QueueInteropTransportFactory;
-use Psr\Container\ContainerInterface;
-use Enqueue\MessengerAdapter\AmqpContextManager;
-use PHPUnit\Framework\TestCase;
-use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Interop\Queue\Context;
+use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
 class QueueInteropTransportFactoryTest extends TestCase
 {

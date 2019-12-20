@@ -12,8 +12,8 @@
 namespace Enqueue\MessengerAdapter\Tests\EnvelopeItem;
 
 use Enqueue\AmqpTools\DelayStrategy;
-use PHPUnit\Framework\TestCase;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
+use PHPUnit\Framework\TestCase;
 
 class TransportConfigurationTest extends TestCase
 {
