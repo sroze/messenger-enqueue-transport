@@ -27,6 +27,7 @@ use Interop\Queue\Queue;
 use Interop\Queue\Topic;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 
@@ -447,6 +448,45 @@ class QueueInteropTransportTest extends TestCase
         $messages = $transport->get();
 
         $this->assertEmpty($messages);
+    }
+
+    public function testItRejectTheMessageIfThereIsAMessageDecodingFailedException()
+    {
+        $serializer = $this->prophesize(SerializerInterface::class);
+
+        $encodedEnvelope = [
+            'body' => 'Foo',
+            'headers' => [],
+            'properties' => []
+        ];
+
+        $serializer->decode($encodedEnvelope)->shouldBeCalled()->willThrow(new MessageDecodingFailedException());
+
+        $messageProphecy = $this->prophesize(Message::class);
+        $messageProphecy->getBody()->willReturn($encodedEnvelope['body']);
+        $messageProphecy->getHeaders()->willReturn($encodedEnvelope['headers']);
+        $messageProphecy->getProperties()->willReturn($encodedEnvelope['properties']);
+
+        $message = $messageProphecy->reveal();
+
+        $psrConsumerProphecy = $this->prophesize(Consumer::class);
+        $psrConsumerProphecy->receive(30000)->shouldBeCalled()->willReturn($message);
+        $psrConsumerProphecy->reject($message, false)->shouldBeCalled();
+
+        $psrQueueProphecy = $this->prophesize(Queue::class);
+        $psrQueue = $psrQueueProphecy->reveal();
+
+        $contextProphecy = $this->prophesize(Context::class);
+        $contextProphecy->createQueue('messages')->shouldBeCalled()->willReturn($psrQueue);
+        $contextProphecy->createConsumer($psrQueue)->shouldBeCalled()->willReturn($psrConsumerProphecy->reveal());
+
+        $contextManagerProphecy = $this->prophesize(ContextManager::class);
+        $contextManagerProphecy->context()->shouldBeCalled()->willReturn($contextProphecy->reveal());
+
+        $transport = $this->getTransport($serializer->reveal(),$contextManagerProphecy->reveal());
+
+        $this->expectException(MessageDecodingFailedException::class);
+        $transport->get();
     }
 
     private function getTransport(
