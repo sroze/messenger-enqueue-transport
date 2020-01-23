@@ -16,6 +16,7 @@ use Enqueue\MessengerAdapter\Exception\RequeueMessageException;
 use Interop\Queue\Context;
 use Interop\Queue\Message;
 use Interop\Queue\Processor;
+use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
@@ -38,11 +39,15 @@ class MessageBusProcessor implements Processor
 
     public function process(Message $message, Context $context)
     {
-        $busMessage = $this->messageDecoder->decode(array(
-            'body' => $message->getBody(),
-            'headers' => $message->getHeaders(),
-            'properties' => $message->getProperties(),
-        ));
+        try {
+            $busMessage = $this->messageDecoder->decode(array(
+                'body' => $message->getBody(),
+                'headers' => $message->getHeaders(),
+                'properties' => $message->getProperties(),
+            ));
+        } catch (MessageDecodingFailedException $e) {
+            return Processor::REJECT;
+        }
 
         try {
             $this->bus->dispatch($busMessage);

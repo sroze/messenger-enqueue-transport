@@ -23,6 +23,7 @@ use Interop\Queue\Exception as InteropQueueException;
 use Interop\Queue\Message;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\LogicException;
+use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
@@ -80,11 +81,17 @@ class QueueInteropTransport implements TransportInterface
             throw $e;
         }
 
-        $envelope = $this->serializer->decode(array(
-            'body' => $interopMessage->getBody(),
-            'headers' => $interopMessage->getHeaders(),
-            'properties' => $interopMessage->getProperties(),
-        ));
+        try {
+            $envelope = $this->serializer->decode(array(
+                'body' => $interopMessage->getBody(),
+                'headers' => $interopMessage->getHeaders(),
+                'properties' => $interopMessage->getProperties(),
+            ));
+        } catch (MessageDecodingFailedException $e) {
+            $this->getConsumer()->reject($interopMessage);
+
+            throw $e;
+        }
 
         $envelope = $envelope->with(new InteropMessageStamp($interopMessage));
 
