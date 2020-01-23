@@ -20,6 +20,7 @@ use Interop\Queue\Processor;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
@@ -52,6 +53,25 @@ class MessageBusProcessorTest extends TestCase
         ))->shouldBeCalled()->willReturn($envelope);
         $messageBusProcessor = new MessageBusProcessor($busProphecy->reveal(), $decoderProphecy->reveal());
         $this->assertSame(Processor::ACK, $messageBusProcessor->process($message, $contextProphecy->reveal()));
+    }
+
+    public function testProcessDecodeFailed()
+    {
+        $message = $this->getTestMessage();
+        $receivedMessage = new ReceivedStamp('test');
+        $envelope = new Envelope($receivedMessage);
+        $contextProphecy = $this->prophesize(Context::class);
+        $busProphecy = $this->prophesize(MessageBusInterface::class);
+        $busProphecy->dispatch($envelope)->shouldNotBeCalled();
+        $decoderProphecy = $this->prophesize(SerializerInterface::class);
+        $decoderProphecy->decode(array(
+            'body' => 'body',
+            'headers' => array('header'),
+            'properties' => array('props'),
+        ))->shouldBeCalled()->willThrow(new MessageDecodingFailedException());
+        $messageBusProcessor = new MessageBusProcessor($busProphecy->reveal(), $decoderProphecy->reveal());
+
+        $this->assertSame(Processor::REJECT, $messageBusProcessor->process($message, $contextProphecy->reveal()));
     }
 
     public function testProcessReject()

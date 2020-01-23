@@ -27,6 +27,7 @@ use Interop\Queue\Queue;
 use Interop\Queue\Topic;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 
@@ -426,6 +427,46 @@ class QueueInteropTransportTest extends TestCase
         );
 
         $transport->send($envelope);
+    }
+
+    public function testDecodeFailed()
+    {
+        $transportName = 'transport';
+        $topicName = 'topic';
+        $queueName = 'queue';
+        $interopMessage = $this->getMockBuilder(Message::class)->getMock();
+        $interopMessage->method('getBody')->willReturn('[}');
+        $interopMessage->method('getHeaders')->willReturn(array());
+        $interopMessage->method('getProperties')->willReturn(array());
+
+        $psrConsumerProphecy = $this->prophesize(Consumer::class);
+        $psrConsumerProphecy->receive(30000)->shouldBeCalled()->willReturn($interopMessage);
+        $psrConsumerProphecy->reject($interopMessage)->shouldBeCalled();
+
+        $psrQueueProphecy = $this->prophesize(Queue::class);
+        $psrQueue = $psrQueueProphecy->reveal();
+
+        $contextProphecy = $this->prophesize(Context::class);
+        $contextProphecy->createQueue('messages')->shouldBeCalled()->willReturn($psrQueue);
+        $contextProphecy->createConsumer($psrQueue)->shouldBeCalled()->willReturn($psrConsumerProphecy->reveal());
+
+        $contextManagerProphecy = $this->prophesize(ContextManager::class);
+        $contextManagerProphecy->context()->shouldBeCalled()->willReturn($contextProphecy->reveal());
+
+        $encoderProphecy = $this->prophesize(SerializerInterface::class);
+        $encoderProphecy->decode(array(
+            'body' => $interopMessage->getBody(),
+            'headers' => $interopMessage->getHeaders(),
+            'properties' => $interopMessage->getProperties(),
+        ))->shouldBeCalled()->willThrow(new MessageDecodingFailedException());
+
+        $transport = $this->getTransport(
+            $encoderProphecy->reveal(),
+            $contextManagerProphecy->reveal()
+        );
+
+        $this->expectException(MessageDecodingFailedException::class);
+        $messages = $transport->get();
     }
 
     public function testNullHandler()
