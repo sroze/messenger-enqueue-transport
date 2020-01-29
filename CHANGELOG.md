@@ -2,6 +2,12 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 0.5.0
+
+### Changed
+
+- Messages are rejected if the serializer fail to decode them.
+
 ## 0.4.0
 
 ### Added
