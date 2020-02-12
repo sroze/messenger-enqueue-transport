@@ -33,7 +33,7 @@ framework:
 
 4. Route the messages that have to go through the message queue:
 ```yaml
-# config/packages/framework.yaml
+# config/packages/messenger.yaml
 framework:
     messenger:
         # ...
