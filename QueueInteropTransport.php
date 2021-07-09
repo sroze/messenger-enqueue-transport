@@ -139,7 +139,11 @@ class QueueInteropTransport implements TransportInterface
 
         $producer = $context->createProducer();
 
-        if (null !== $envelope->last(RedeliveryStamp::class) && $producer instanceof SnsQsProducer) {
+        if (
+            isset($destination['queue'])
+            && null !== $envelope->last(RedeliveryStamp::class)
+            && $producer instanceof SnsQsProducer
+        ) {
             $topic = $context->createQueue($destination['queue']);
         }
 
