@@ -2,6 +2,12 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 0.5.1
+
+### Fixed
+
+- Fixed snsqs redelivery. Make sure we redeliver to the queue and not the SNS topic.
+
 ## 0.5.0
 
 ### Changed
