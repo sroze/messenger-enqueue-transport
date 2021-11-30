@@ -23,19 +23,19 @@ class EnqueueBridgeExtensionTest extends TestCase
 {
     private $extension;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->extension = new EnqueueAdapterExtension();
     }
 
-    public function testConstruct()
+    public function testConstruct(): void
     {
         $this->extension = new EnqueueAdapterExtension();
         $this->assertInstanceOf(ExtensionInterface::class, $this->extension);
         $this->assertInstanceOf(ConfigurationExtensionInterface::class, $this->extension);
     }
 
-    public function testLoad()
+    public function testLoad(): void
     {
         $containerBuilderProphecy = $this->prophesize(ContainerBuilder::class);
         $containerBuilderProphecy->fileExists(Argument::any())->willReturn(false);

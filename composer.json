@@ -17,8 +17,8 @@
     ],
     "require": {
         "enqueue/enqueue-bundle": "^0.10",
-        "symfony/messenger": "^4.3|^5",
-        "symfony/options-resolver": "^3.4|^4.2|^5",
+        "symfony/messenger": "^4.3|^5|^6",
+        "symfony/options-resolver": "^3.4|^4.2|^5|^6",
         "enqueue/amqp-tools": "^0.10"
     },
     "replace": {
@@ -38,8 +38,8 @@
     },
     "require-dev": {
         "phpspec/prophecy": "^1.8.0",
-        "phpunit/phpunit": "^7.1",
-        "symfony/yaml": "^3.4|^4.1|^5",
+        "phpunit/phpunit": "^9.5",
+        "symfony/yaml": "^3.4|^4.1|^5|^6",
         "enqueue/snsqs": "^0.10.11"
     }
 }
