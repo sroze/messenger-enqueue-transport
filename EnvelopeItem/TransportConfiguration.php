@@ -107,6 +107,11 @@ final class TransportConfiguration implements StampInterface, \Serializable
         ));
     }
 
+    public function __serialize(): ?string
+    {
+        return $this->serialize();
+    }
+
     public function unserialize($serialized)
     {
         list(
@@ -118,5 +123,10 @@ final class TransportConfiguration implements StampInterface, \Serializable
             'topic' => $topic,
             'metadata' => $metadata,
         ));
+    }
+
+    public function __unserialize(string $data): void
+    {
+        $this->unserialize($data);
     }
 }
