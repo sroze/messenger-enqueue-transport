@@ -21,12 +21,14 @@ use Enqueue\MessengerAdapter\Tests\Fixtures\DecoratedPsrMessage;
 use Enqueue\SnsQs\SnsQsProducer;
 use Interop\Queue\Consumer;
 use Interop\Queue\Context;
+use Interop\Queue\Destination;
 use Interop\Queue\Exception\Exception;
 use Interop\Queue\Message;
 use Interop\Queue\Producer;
 use Interop\Queue\Queue;
 use Interop\Queue\Topic;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Promise\CallbackPromise;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
@@ -424,6 +426,85 @@ class QueueInteropTransportTest extends TestCase
                 'transport_name' => $transportName,
                 'topic' => array('name' => $topicName, 'foo' => 'bar'),
                 'queue' => array('name' => $queueName, 'bar' => 'foo'),
+            ),
+            true
+        );
+
+        $transport->send($envelope);
+    }
+
+    public function testSendWithTopicMetadata(): void
+    {
+        $transportName = 'transport';
+        $topicName = 'topic';
+        $queueName = 'queue';
+        $message = new \stdClass();
+        $message->foo = 'bar';
+        $envelope = (new Envelope($message))->with(new TransportConfiguration(array(
+            'topic' => $topicName,
+            'topic_metadata' => array('FifoTopic' => true),
+        )));
+
+        $psrMessageProphecy = $this->prophesize(DecoratedPsrMessage::class);
+        $psrMessage = $psrMessageProphecy->reveal();
+
+        $topic = new class($topicName) implements Topic {
+            private $topicName;
+            private $attributes = [];
+            public function __construct(string $topicName)
+            {
+                $this->topicName = $topicName;
+            }
+            public function getTopicName(): string
+            {
+                return $this->topicName;
+            }
+            public function setFifoTopic(bool $enable): void
+            {
+                $this->attributes['FifoTopic'] = $enable ? 'true' : null;
+            }
+            public function getAttributes(): array
+            {
+                return $this->attributes;
+            }
+        };
+
+        $producerProphecy = $this->prophesize(Producer::class);
+        $currentTest = $this;
+        $producerProphecy
+            ->send($topic, $psrMessage)
+            ->will(new CallbackPromise(function(array $data) use ($topicName, $currentTest): void {
+                $currentTest::assertCount(2, $data);
+                $topic = $data[0];
+                $currentTest::assertSame($topicName, $topic->getTopicName());
+                $currentTest::assertSame(['FifoTopic' => 'true'], $topic->getAttributes());
+            }))
+            ->shouldBeCalled();
+
+        $contextProphecy = $this->prophesize(Context::class);
+        $contextProphecy->createTopic($topicName)->shouldBeCalled()->willReturn($topic);
+        $contextProphecy->createProducer()->shouldBeCalled()->willReturn($producerProphecy->reveal());
+        $contextProphecy->createMessage('foo', array(), array())->shouldBeCalled()->willReturn($psrMessage);
+
+        $contextManagerProphecy = $this->prophesize(ContextManager::class);
+        $contextManagerProphecy->context()->shouldBeCalled()->willReturn($contextProphecy->reveal());
+        $contextManagerProphecy->ensureExists(array(
+            'topic' => $topicName,
+            'topicOptions' => array('name' => $topicName),
+            'queue' => $queueName,
+            'queueOptions' => array('name' => $queueName),
+        ))->shouldBeCalled();
+
+        $encoderProphecy = $this->prophesize(SerializerInterface::class);
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+
+        $transport = $this->getTransport(
+            $encoderProphecy->reveal(),
+            $contextManagerProphecy->reveal(),
+            array(
+                'transport_name' => $transportName,
+                'topic' => array('name' => $topicName),
+                'queue' => array('name' => $queueName),
             ),
             true
         );

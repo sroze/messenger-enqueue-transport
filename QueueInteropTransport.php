@@ -22,6 +22,7 @@ use Enqueue\SnsQs\SnsQsProducer;
 use Interop\Queue\Consumer;
 use Interop\Queue\Exception as InteropQueueException;
 use Interop\Queue\Message;
+use Interop\Queue\Topic;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\LogicException;
 use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
@@ -128,6 +129,7 @@ class QueueInteropTransport implements TransportInterface
         $context = $this->contextManager->context();
         $destination = $this->getDestination($envelope);
         $topic = $context->createTopic($destination['topic']);
+        $this->setTopicMetadata($topic, $envelope);
 
         if ($this->debug) {
             $this->contextManager->ensureExists($destination);
@@ -244,6 +246,27 @@ class QueueInteropTransport implements TransportInterface
                 throw new MissingMessageMetadataSetterException($key, $setter, $class->getName());
             }
             $interopMessage->{$setter}($value);
+        }
+    }
+
+    private function setTopicMetadata(Topic $topic, Envelope $envelope): void
+    {
+        /** @var TransportConfiguration|null $configuration */
+        $configuration = $envelope->last(TransportConfiguration::class);
+
+        if (null === $configuration || !$configuration->hasTopicMetadata()) {
+            return;
+        }
+
+        $metadata = $configuration->getTopicMetadata();
+        $class = new \ReflectionClass($topic);
+
+        foreach ($metadata as $key => $value) {
+            $setter = sprintf('set%s', ucfirst($key));
+            if (!$class->hasMethod($setter)) {
+                continue;
+            }
+            $topic->{$setter}($value);
         }
     }
 

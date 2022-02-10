@@ -41,6 +41,7 @@ class TransportConfigurationTest extends TestCase
         $transportConfiguration = new TransportConfiguration(array(
             'topic' => 'foo',
             'metadata' => array('foo' => 'bar'),
+            'topic_metadata' => array('bar' => true),
         ));
         $this->assertEquals($transportConfiguration, unserialize(serialize($transportConfiguration)));
     }
@@ -74,5 +75,13 @@ class TransportConfigurationTest extends TestCase
             'priority' => 10,
             'timeToLive' => 50,
         ), $transportConfiguration->getMetadata());
+    }
+
+    public function testTopicMetadataConfiguration(): void
+    {
+        $transportConfiguration = new TransportConfiguration(array('topic' => 'foo', 'topic_metadata' => ['FifoTopic' => true]));
+        $this->assertSame('foo', $transportConfiguration->getTopic());
+        $this->assertSame(['FifoTopic' => true], $transportConfiguration->getTopicMetadata());
+        $this->assertTrue($transportConfiguration->hasTopicMetadata());
     }
 }
