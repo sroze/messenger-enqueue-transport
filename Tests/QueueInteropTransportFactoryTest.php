@@ -17,11 +17,14 @@ use Enqueue\MessengerAdapter\QueueInteropTransport;
 use Enqueue\MessengerAdapter\QueueInteropTransportFactory;
 use Interop\Queue\Context;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
 class QueueInteropTransportFactoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testSupports()
     {
         $factory = $this->getFactory();
@@ -84,12 +87,10 @@ class QueueInteropTransportFactoryTest extends TestCase
         $this->assertEquals($expectedTransport, $factory->createReceiver($dsn, array()));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Can't find Enqueue's transport named "foo": Service "enqueue.transport.foo.context" is not found.
-     */
     public function testItThrowsAnExceptionWhenContextDoesNotExist()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Can't find Enqueue's transport named \"foo\": Service \"enqueue.transport.foo.context\" is not found.");
         $container = $this->prophesize(ContainerInterface::class);
         $container->has('enqueue.transport.foo.context')->willReturn(false);
 

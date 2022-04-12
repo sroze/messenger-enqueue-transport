@@ -14,6 +14,7 @@ namespace Enqueue\MessengerAdapter\Tests;
 use Enqueue\MessengerAdapter\Bundle\DependencyInjection\EnqueueAdapterExtension;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\ConfigurationExtensionInterface;
@@ -21,6 +22,8 @@ use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
 class EnqueueBridgeExtensionTest extends TestCase
 {
+    use ProphecyTrait;
+
     private $extension;
 
     public function setUp(): void

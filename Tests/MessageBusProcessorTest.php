@@ -19,6 +19,7 @@ use Interop\Queue\Message;
 use Interop\Queue\Processor;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -27,6 +28,8 @@ use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
 class MessageBusProcessorTest extends TestCase
 {
+    use ProphecyTrait;
+
     private function getTestMessage()
     {
         $messageProphecy = $this->prophesize(Message::class);
