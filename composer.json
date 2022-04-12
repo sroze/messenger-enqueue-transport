@@ -1,9 +1,9 @@
 {
-    "name": "autoprotect-group/messenger-enqueue-transport",
+    "name": "sroze/messenger-enqueue-transport",
     "type": "symfony-bundle",
     "description": "Enqueue adapter for Symfony Messenger component",
     "keywords": ["symfony", "messenger", "enqueue"],
-    "homepage": "https://github.com/AutoProtect-Group/messenger-enqueue-transport",
+    "homepage": "https://symfony.com",
     "license": "MIT",
     "authors": [
         {
@@ -12,7 +12,7 @@
         },
         {
             "name": "Symfony Community",
-            "homepage": "http://symfony.com/contributors"
+            "homepage": "https://symfony.com/contributors"
         }
     ],
     "require": {
