@@ -99,24 +99,6 @@ final class TransportConfiguration implements StampInterface
         return $this;
     }
 
-    public function serialize(): string
-    {
-        return serialize($this->__serialize());
-    }
-
-    public function unserialize(string $serialized): void
-    {
-        list(
-            'topic' => $topic,
-            'metadata' => $metadata
-        ) = unserialize($serialized, array('allowed_classes' => false));
-
-        $this->__unserialize(array(
-            'topic' => $topic,
-            'metadata' => $metadata,
-        ));
-    }
-
     public function __serialize(): array
     {
         return [
