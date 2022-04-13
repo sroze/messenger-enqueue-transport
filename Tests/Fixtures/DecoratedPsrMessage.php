@@ -15,57 +15,23 @@ use Interop\Queue\Message;
 
 class DecoratedPsrMessage implements Message
 {
-    /**
-     * @var string
-     */
-    private $body;
+    private string $body;
 
-    /**
-     * @var array
-     */
-    private $properties;
+    private array $properties;
 
-    /**
-     * @var array
-     */
-    private $headers;
+    private array $headers;
 
-    /**
-     * @var string|null
-     */
-    private $deliveryTag;
+    private bool $redelivered;
 
-    /**
-     * @var string|null
-     */
-    private $consumerTag;
+    private string $routingKey;
 
-    /**
-     * @var bool
-     */
-    private $redelivered;
-
-    /**
-     * @var int
-     */
-    private $flags;
-
-    /**
-     * @var string
-     */
-    private $routingKey;
-
-    /**
-     * @param string $body
-     */
-    public function __construct($body = '', array $properties = array(), array $headers = array())
+    public function __construct(string $body = '', array $properties = array(), array $headers = array())
     {
         $this->body = $body;
         $this->properties = $properties;
         $this->headers = $headers;
 
         $this->redelivered = false;
-        $this->flags = self::FLAG_NOPARAM;
     }
 
     /**

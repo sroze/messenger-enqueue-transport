@@ -389,9 +389,6 @@ class QueueInteropTransportTest extends TestCase
     public function testSendWithBadMessageMetadata()
     {
         $this->expectException(MissingMessageMetadataSetterException::class);
-        $this->expectErrorMessage(
-            'Missing "setDumb" setter for "dumb" metadata key in "Double\Enqueue\MessengerAdapter\Tests\Fixtures\DecoratedPsrMessage\P18" class'
-        );
 
         $transportName = 'transport';
         $topicName = 'topic';
