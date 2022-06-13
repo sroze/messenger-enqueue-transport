@@ -15,9 +15,11 @@ use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
 use Enqueue\MessengerAdapter\EnvelopeItem\InteropMessageStamp;
+use Enqueue\MessengerAdapter\EnvelopeItem\MessageAttributesStamp;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Enqueue\MessengerAdapter\Exception\MissingMessageMetadataSetterException;
 use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
+use Enqueue\MessengerAdapter\Model\MessageAttributes;
 use Enqueue\SnsQs\SnsQsProducer;
 use Interop\Queue\Consumer;
 use Interop\Queue\Exception as InteropQueueException;
@@ -168,6 +170,8 @@ class QueueInteropTransport implements TransportInterface
             $producer->setTimeToLive($this->options['timeToLive']);
         }
 
+        $this->addMessageAttributes($interopMessage, $envelope);
+
         try {
             $producer->send($topic, $interopMessage);
         } catch (InteropQueueException $e) {
@@ -280,5 +284,23 @@ class QueueInteropTransport implements TransportInterface
         $queue = $context->createQueue($destination['queue']);
 
         return $context->createConsumer($queue);
+    }
+
+    private function addMessageAttributes(Message $interopMessage, Envelope $envelope): void
+    {
+        if (!\method_exists($interopMessage, 'setMessageAttributes')) {
+            return;
+        }
+        if (empty($messageAttributesStamps = $envelope->all(MessageAttributesStamp::class))) {
+            return;
+        }
+
+        $messageAttributes = \array_map(
+            static function (MessageAttributesStamp $stamp) {
+                return $stamp->getAttributes();
+            },
+            $messageAttributesStamps
+        );
+        $interopMessage->setMessageAttributes(MessageAttributes::merge(...$messageAttributes)->toArray());
     }
 }
