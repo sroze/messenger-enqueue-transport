@@ -14,10 +14,13 @@ namespace Enqueue\MessengerAdapter\Tests;
 use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\MessengerAdapter\ContextManager;
+use Enqueue\MessengerAdapter\EnvelopeItem\MessageAttributesStamp;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Enqueue\MessengerAdapter\Exception\MissingMessageMetadataSetterException;
+use Enqueue\MessengerAdapter\Model\MessageAttributes;
 use Enqueue\MessengerAdapter\QueueInteropTransport;
 use Enqueue\MessengerAdapter\Tests\Fixtures\DecoratedPsrMessage;
+use Enqueue\SnsQs\SnsQsMessage;
 use Enqueue\SnsQs\SnsQsProducer;
 use Interop\Queue\Consumer;
 use Interop\Queue\Context;
@@ -108,6 +111,61 @@ class QueueInteropTransportTest extends TestCase
         $envelope = new Envelope($message);
 
         $psrMessageProphecy = $this->prophesize(Message::class);
+        $psrMessage = $psrMessageProphecy->reveal();
+        $topicProphecy = $this->prophesize(Topic::class);
+        $topic = $topicProphecy->reveal();
+
+        $producerProphecy = $this->prophesize(Producer::class);
+        $producerProphecy->send($topic, $psrMessage)->shouldBeCalled();
+
+        $contextProphecy = $this->prophesize(Context::class);
+        $contextProphecy->createTopic($topicName)->shouldBeCalled()->willReturn($topic);
+        $contextProphecy->createProducer()->shouldBeCalled()->willReturn($producerProphecy->reveal());
+        $contextProphecy->createMessage('foo', array(), array())->shouldBeCalled()->willReturn($psrMessage);
+
+        $contextManagerProphecy = $this->prophesize(ContextManager::class);
+        $contextManagerProphecy->context()->shouldBeCalled()->willReturn($contextProphecy->reveal());
+
+        $encoderProphecy = $this->prophesize(SerializerInterface::class);
+        $encoderProphecy->encode($envelope)->shouldBeCalled()->willReturn(array('body' => 'foo'));
+
+        $transport = $this->getTransport(
+            $encoderProphecy->reveal(),
+            $contextManagerProphecy->reveal(),
+            array(
+                'topic' => array('name' => $topicName),
+                'queue' => array('name' => $queueName),
+            ),
+            false
+        );
+
+        $transport->send($envelope);
+    }
+
+    public function testSendSnsQsMessageWithMessageAttributes()
+    {
+        $topicName = 'topic';
+        $queueName = 'queue';
+        $message = new \stdClass();
+        $message->foo = 'bar';
+        $envelope = (new Envelope($message))
+            ->with(new MessageAttributesStamp(
+                new MessageAttributes(array('foo' => 'bar', 'baz' => 'quux'))
+            ));
+
+        $psrMessageProphecy = $this->prophesize(SnsQsMessage::class);
+        $psrMessageProphecy->setMessageAttributes(
+            array(
+                'foo' => array(
+                    'DataType' => 'String',
+                    'StringValue' => 'bar',
+                ),
+                'baz' => array(
+                    'DataType' => 'String',
+                    'StringValue' => 'quux',
+                ),
+            )
+        )->shouldBeCalled();
         $psrMessage = $psrMessageProphecy->reveal();
         $topicProphecy = $this->prophesize(Topic::class);
         $topic = $topicProphecy->reveal();
