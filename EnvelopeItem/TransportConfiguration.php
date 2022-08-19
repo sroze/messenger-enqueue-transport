@@ -119,4 +119,17 @@ final class TransportConfiguration implements StampInterface, \Serializable
             'metadata' => $metadata,
         ));
     }
+
+    public function  __serialize(): array
+    {
+        return [
+            'topic' => $this->topic,
+            'metadata' => $this->metadata,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->__construct($data);
+    }
 }
