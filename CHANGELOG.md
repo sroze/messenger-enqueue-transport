@@ -2,6 +2,16 @@
 
 The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
 
+## 0.7.0
+
+## Added
+
+- `__serialize` and `__unserialize` methods on the `TransportConfiguration` class, for PHP 8.1.
+
+## Removed
+
+- `serialize` and `unserialize` methods on the `TransportConfiguration` class.
+
 ## 0.6.0
 
 ### Added
