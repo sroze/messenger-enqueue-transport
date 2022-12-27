@@ -18,9 +18,12 @@ use Interop\Amqp\AmqpTopic;
 use Interop\Amqp\Impl\AmqpBind;
 use Interop\Queue\Context;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class AmqpContextManagerTest extends TestCase
 {
+    use ProphecyTrait;
+
     private function getContextManager($topicName, $queueName, $topicType = null, $topicFlags = null, $queueBindingKey = null, $queueFlags = null)
     {
         $topicProphecy = $this->prophesize(AmqpTopic::class);

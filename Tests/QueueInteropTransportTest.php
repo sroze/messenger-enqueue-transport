@@ -16,6 +16,7 @@ use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\MessengerAdapter\ContextManager;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Enqueue\MessengerAdapter\Exception\MissingMessageMetadataSetterException;
+use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
 use Enqueue\MessengerAdapter\QueueInteropTransport;
 use Enqueue\MessengerAdapter\Tests\Fixtures\DecoratedPsrMessage;
 use Enqueue\SnsQs\SnsQsProducer;
@@ -27,6 +28,7 @@ use Interop\Queue\Producer;
 use Interop\Queue\Queue;
 use Interop\Queue\Topic;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
@@ -35,6 +37,8 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
 
 class QueueInteropTransportTest extends TestCase
 {
+    use ProphecyTrait;
+
     public function testInterfaces()
     {
         $transport = $this->getTransport();
@@ -385,7 +389,6 @@ class QueueInteropTransportTest extends TestCase
     public function testSendWithBadMessageMetadata()
     {
         $this->expectException(MissingMessageMetadataSetterException::class);
-        $this->expectExceptionMessageRegExp('/Missing "setDumb" setter for "dumb" metadata key in "Double\\\Enqueue\\\MessengerAdapter\\\Tests\\\Fixtures\\\DecoratedPsrMessage\\\[^"]+" class/');
 
         $transportName = 'transport';
         $topicName = 'topic';
@@ -431,11 +434,9 @@ class QueueInteropTransportTest extends TestCase
         $transport->send($envelope);
     }
 
-    /**
-     * @expectedException \Enqueue\MessengerAdapter\Exception\SendingMessageFailedException
-     */
     public function testThrow()
     {
+        $this->expectException(SendingMessageFailedException::class);
         $transportName = 'transport';
         $topicName = 'topic';
         $queueName = 'queue';
@@ -486,9 +487,6 @@ class QueueInteropTransportTest extends TestCase
 
     public function testDecodeFailed()
     {
-        $transportName = 'transport';
-        $topicName = 'topic';
-        $queueName = 'queue';
         $interopMessage = $this->getMockBuilder(Message::class)->getMock();
         $interopMessage->method('getBody')->willReturn('[}');
         $interopMessage->method('getHeaders')->willReturn(array());
