@@ -15,6 +15,7 @@ use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
 use Enqueue\MessengerAdapter\EnvelopeItem\InteropMessageStamp;
+use Enqueue\MessengerAdapter\EnvelopeItem\PartitionStamp;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Enqueue\MessengerAdapter\Exception\MissingMessageMetadataSetterException;
 use Enqueue\MessengerAdapter\Exception\SendingMessageFailedException;
@@ -166,6 +167,11 @@ class QueueInteropTransport implements TransportInterface
         }
         if (isset($this->options['timeToLive'])) {
             $producer->setTimeToLive($this->options['timeToLive']);
+        }
+
+        $partitionStamp = $envelope->last(PartitionStamp::class);
+        if (method_exists($interopMessage, 'setPartition') && !is_null($partitionStamp)) {
+            $interopMessage->setPartition($partitionStamp->getPartition());
         }
 
         try {
