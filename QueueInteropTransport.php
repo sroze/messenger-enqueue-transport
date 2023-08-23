@@ -15,6 +15,7 @@ use Enqueue\AmqpTools\DelayStrategyAware;
 use Enqueue\AmqpTools\RabbitMqDelayPluginDelayStrategy;
 use Enqueue\AmqpTools\RabbitMqDlxDelayStrategy;
 use Enqueue\MessengerAdapter\EnvelopeItem\InteropMessageStamp;
+use Enqueue\MessengerAdapter\EnvelopeItem\KeyStamp;
 use Enqueue\MessengerAdapter\EnvelopeItem\PartitionStamp;
 use Enqueue\MessengerAdapter\EnvelopeItem\TransportConfiguration;
 use Enqueue\MessengerAdapter\Exception\MissingMessageMetadataSetterException;
@@ -172,6 +173,16 @@ class QueueInteropTransport implements TransportInterface
         $partitionStamp = $envelope->last(PartitionStamp::class);
         if (method_exists($interopMessage, 'setPartition') && !is_null($partitionStamp)) {
             $interopMessage->setPartition($partitionStamp->getPartition());
+        }
+
+        $partitionStamp = $envelope->last(PartitionStamp::class);
+        if (method_exists($interopMessage, 'setPartition') && !is_null($partitionStamp)) {
+            $interopMessage->setPartition($partitionStamp->getPartition());
+        }
+
+        $keyStamp = $envelope->last(KeyStamp::class);
+        if (method_exists($interopMessage, 'setKey') && !is_null($keyStamp)) {
+            $interopMessage->setKey($keyStamp->getKey());
         }
 
         try {
