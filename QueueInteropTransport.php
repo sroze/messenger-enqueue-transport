@@ -175,11 +175,6 @@ class QueueInteropTransport implements TransportInterface
             $interopMessage->setPartition($partitionStamp->getPartition());
         }
 
-        $partitionStamp = $envelope->last(PartitionStamp::class);
-        if (method_exists($interopMessage, 'setPartition') && !is_null($partitionStamp)) {
-            $interopMessage->setPartition($partitionStamp->getPartition());
-        }
-
         $keyStamp = $envelope->last(KeyStamp::class);
         if (method_exists($interopMessage, 'setKey') && !is_null($keyStamp)) {
             $interopMessage->setKey($keyStamp->getKey());
