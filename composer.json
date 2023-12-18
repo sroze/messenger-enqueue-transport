@@ -38,7 +38,7 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5",
+        "phpunit/phpunit": "^10.0",
         "symfony/yaml": "^5.4 || ^6.3 || ^7.0",
         "enqueue/snsqs": "^0.10.11",
         "phpspec/prophecy-phpunit": "^2.0",
