@@ -94,7 +94,7 @@ class QueueInteropTransportFactoryTest extends TestCase
         $container = $this->prophesize(ContainerInterface::class);
         $container->has('enqueue.transport.foo.context')->willReturn(false);
 
-        $factory = $this->getFactory();
+        $factory = $this->getFactory(container: $container->reveal());
         $factory->createTransport('enqueue://foo', array());
     }
 
