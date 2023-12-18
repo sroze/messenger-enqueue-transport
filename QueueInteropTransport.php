@@ -172,7 +172,7 @@ class QueueInteropTransport implements TransportInterface
             $producer->send($topic, $interopMessage);
         } catch (InteropQueueException $e) {
             if (!$this->contextManager->recoverException($e, $destination)) {
-                throw new SendingMessageFailedException($e->getMessage(), null, $e);
+                throw new SendingMessageFailedException(message: $e->getMessage(), previous: $e);
             }
 
             // The context manager recovered the exception, we re-try.
