@@ -17,8 +17,8 @@
     ],
     "require": {
         "enqueue/enqueue-bundle": "^0.10",
-        "symfony/messenger": "^4.3|^5|^6",
-        "symfony/options-resolver": "^3.4|^4.2|^5|^6",
+        "symfony/messenger": "^4.3 || ^5.0 || ^6.0 || ^7.0",
+        "symfony/options-resolver": "^3.4 || ^4.2 || ^5.0 || ^6.0 || ^7.0",
         "enqueue/amqp-tools": "^0.10"
     },
     "replace": {
