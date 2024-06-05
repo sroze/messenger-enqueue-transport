@@ -40,10 +40,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class QueueInteropTransport implements TransportInterface
 {
-    private $serializer;
-    private $contextManager;
-    private $options;
-    private $debug;
+    private SerializerInterface $serializer;
+    private ContextManager $contextManager;
+    private array $options;
+    private mixed $debug;
 
     public function __construct(
         SerializerInterface $serializer,

@@ -23,7 +23,7 @@ use Symfony\Component\Messenger\Stamp\StampInterface;
  */
 final class TransportConfiguration implements StampInterface
 {
-    private $topic;
+    private mixed $topic;
 
     private array $metadata;
 

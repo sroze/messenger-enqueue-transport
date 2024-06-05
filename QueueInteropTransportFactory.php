@@ -24,9 +24,9 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
  */
 class QueueInteropTransportFactory implements TransportFactoryInterface
 {
-    private $serializer;
-    private $debug;
-    private $container;
+    private SerializerInterface $serializer;
+    private bool $debug;
+    private ContainerInterface $container;
 
     public function __construct(SerializerInterface $serializer, ContainerInterface $container, bool $debug = false)
     {
