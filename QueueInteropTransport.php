@@ -48,7 +48,7 @@ class QueueInteropTransport implements TransportInterface
     public function __construct(
         SerializerInterface $serializer,
         ContextManager $contextManager,
-        array $options = array(),
+        array $options = [],
         $debug = false
     ) {
         $this->serializer = $serializer;
@@ -73,22 +73,28 @@ class QueueInteropTransport implements TransportInterface
 
         try {
             if (null === ($interopMessage = $this->getConsumer()->receive($this->options['receiveTimeout'] ?? 30000))) {
-                return array();
+                return [];
             }
         } catch (\Exception $e) {
             if ($this->contextManager->recoverException($e, $destination)) {
-                return array();
+                return [];
             }
 
             throw $e;
         }
 
         try {
-            $envelope = $this->serializer->decode(array(
-                'body' => $interopMessage->getBody(),
-                'headers' => $interopMessage->getHeaders(),
-                'properties' => $interopMessage->getProperties(),
-            ));
+            if (method_exists($interopMessage, 'jsonSerialize')) {
+                $encodedEnvelop = $interopMessage->jsonSerialize();
+            } else {
+                $encodedEnvelop = [
+                    'body' => $interopMessage->getBody(),
+                    'headers' => $interopMessage->getHeaders(),
+                    'properties' => $interopMessage->getProperties(),
+                ];
+            }
+
+            $envelope = $this->serializer->decode($encodedEnvelop);
         } catch (MessageDecodingFailedException $e) {
             $this->getConsumer()->reject($interopMessage);
 
@@ -97,7 +103,7 @@ class QueueInteropTransport implements TransportInterface
 
         $envelope = $envelope->with(new InteropMessageStamp($interopMessage));
 
-        return array($envelope);
+        return [$envelope];
     }
 
     /**
@@ -184,32 +190,33 @@ class QueueInteropTransport implements TransportInterface
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(array(
-            'transport_name' => null,
-            'receiveTimeout' => null,
-            'deliveryDelay' => null,
-            'delayStrategy' => RabbitMqDelayPluginDelayStrategy::class,
-            'priority' => null,
-            'timeToLive' => null,
-            'topic' => array('name' => 'messages'),
-            'queue' => array('name' => 'messages'),
-        ));
+        $resolver->setDefaults([
+                                   'transport_name' => null,
+                                   'receiveTimeout' => null,
+                                   'deliveryDelay' => null,
+                                   'delayStrategy' => RabbitMqDelayPluginDelayStrategy::class,
+                                   'priority' => null,
+                                   'timeToLive' => null,
+                                   'topic' => ['name' => 'messages'],
+                                   'queue' => ['name' => 'messages'],
+                               ]);
 
-        $resolver->setAllowedTypes('transport_name', array('null', 'string'));
-        $resolver->setAllowedTypes('receiveTimeout', array('null', 'int'));
-        $resolver->setAllowedTypes('deliveryDelay', array('null', 'int'));
-        $resolver->setAllowedTypes('priority', array('null', 'int'));
-        $resolver->setAllowedTypes('timeToLive', array('null', 'int'));
-        $resolver->setAllowedTypes('delayStrategy', array('null', 'string'));
+        $resolver->setAllowedTypes('transport_name', ['null', 'string']);
+        $resolver->setAllowedTypes('receiveTimeout', ['null', 'int']);
+        $resolver->setAllowedTypes('deliveryDelay', ['null', 'int']);
+        $resolver->setAllowedTypes('priority', ['null', 'int']);
+        $resolver->setAllowedTypes('timeToLive', ['null', 'int']);
+        $resolver->setAllowedTypes('delayStrategy', ['null', 'string']);
 
-        $resolver->setAllowedValues('delayStrategy', array(
-                null,
-                RabbitMqDelayPluginDelayStrategy::class,
-                RabbitMqDlxDelayStrategy::class,
-            )
+        $resolver->setAllowedValues('delayStrategy', [
+                                                       null,
+                                                       RabbitMqDelayPluginDelayStrategy::class,
+                                                       RabbitMqDlxDelayStrategy::class,
+                                                   ]
         );
 
-        $resolver->setNormalizer('delayStrategy', function (Options $options, $value) {
+        $resolver->setNormalizer('delayStrategy', function (Options $options, $value)
+        {
             return null !== $value ? new $value() : null;
         });
     }
@@ -219,12 +226,12 @@ class QueueInteropTransport implements TransportInterface
         $configuration = $envelope ? $envelope->last(TransportConfiguration::class) : null;
         $topic = null !== $configuration ? $configuration->getTopic() : null;
 
-        return array(
+        return [
             'topic' => $topic ?? $this->options['topic']['name'],
             'topicOptions' => $this->options['topic'],
             'queue' => $this->options['queue']['name'],
             'queueOptions' => $this->options['queue'],
-        );
+        ];
     }
 
     private function setMessageMetadata(Message $interopMessage, Envelope $envelope): void
@@ -254,8 +261,8 @@ class QueueInteropTransport implements TransportInterface
 
         $interopMessage = $context->createMessage(
             $encodedMessage['body'],
-            $encodedMessage['properties'] ?? array(),
-            $encodedMessage['headers'] ?? array()
+            $encodedMessage['properties'] ?? [],
+            $encodedMessage['headers'] ?? []
         );
 
         return $interopMessage;
