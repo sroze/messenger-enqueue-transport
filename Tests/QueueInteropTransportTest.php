@@ -544,8 +544,8 @@ class QueueInteropTransportTest extends TestCase
     }
 
     private function getTransport(
-        SerializerInterface $serializer = null,
-        ContextManager $contextManager = null,
+        ?SerializerInterface $serializer = null,
+        ?ContextManager $contextManager = null,
         array $options = array(),
         $debug = false
     ) {

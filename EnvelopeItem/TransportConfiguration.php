@@ -71,28 +71,28 @@ final class TransportConfiguration implements StampInterface
         return $this;
     }
 
-    public function setPriority(int $priority = null): self
+    public function setPriority(?int $priority = null): self
     {
         $this->metadata['priority'] = $priority;
 
         return $this;
     }
 
-    public function setDeliveryDelay(int $deliveryDelay = null): self
+    public function setDeliveryDelay(?int $deliveryDelay = null): self
     {
         $this->metadata['deliveryDelay'] = $deliveryDelay;
 
         return $this;
     }
 
-    public function setDelayStrategy(DelayStrategy $delayStrategy = null): self
+    public function setDelayStrategy(?DelayStrategy $delayStrategy = null): self
     {
         $this->metadata['delayStrategy'] = $delayStrategy;
 
         return $this;
     }
 
-    public function setTimeToLive(int $timeToLive = null): self
+    public function setTimeToLive(?int $timeToLive = null): self
     {
         $this->metadata['timeToLive'] = $timeToLive;
 
