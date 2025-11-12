@@ -98,7 +98,7 @@ class QueueInteropTransportFactoryTest extends TestCase
         $factory->createTransport('enqueue://foo', array());
     }
 
-    private function getFactory(SerializerInterface $serializer = null, ContainerInterface $container = null, $debug = true)
+    private function getFactory(?SerializerInterface $serializer = null, ?ContainerInterface $container = null, $debug = true)
     {
         return new QueueInteropTransportFactory(
             $serializer ?: $this->prophesize(SerializerInterface::class)->reveal(),
