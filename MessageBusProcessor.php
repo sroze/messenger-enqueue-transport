@@ -28,8 +28,8 @@ use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
  */
 class MessageBusProcessor implements Processor
 {
-    private $bus;
-    private $messageDecoder;
+    private MessageBusInterface $bus;
+    private SerializerInterface $messageDecoder;
 
     public function __construct(MessageBusInterface $bus, SerializerInterface $messageDecoder)
     {

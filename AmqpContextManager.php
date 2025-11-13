@@ -19,7 +19,7 @@ use Interop\Queue\Context;
 
 class AmqpContextManager implements ContextManager
 {
-    private $context;
+    private Context $context;
 
     public function __construct(Context $context)
     {
